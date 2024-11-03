@@ -62,7 +62,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
          */
         public function enqueue( $admin = true, $no_dialog = false ) {
             global $pagenow;
-            if(did_action('wp_enqueue_media') || (isset($_GET['page']) && $_GET['page'] === 'stockpack')) {
+            if(did_action('wp_enqueue_media') || (isset($_GET['page']) && $_GET['page'] === 'stockpack') || stockpack_frontend_load()) {
                 $this->enqueue_scripts($admin);
                 $this->enqueue_styles($no_dialog);
             }
@@ -228,7 +228,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
          */
         public function templates() {
 
-            if (!did_action('wp_enqueue_media') || (isset($_GET['page']) && $_GET['page'] === 'stockpack')) {
+            if (!did_action('wp_enqueue_media') || (isset($_GET['page']) && $_GET['page'] === 'stockpack') || stockpack_frontend_load()) {
                 return;
             }
 
