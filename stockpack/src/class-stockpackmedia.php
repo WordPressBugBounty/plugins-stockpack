@@ -228,8 +228,10 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
          */
         public function templates() {
 
-            if (!did_action('wp_enqueue_media') || (isset($_GET['page']) && $_GET['page'] === 'stockpack') || stockpack_frontend_load()) {
-                return;
+            if (!did_action('wp_enqueue_media') || (isset($_GET['page']) && $_GET['page'] === 'stockpack') ) {
+                if(!stockpack_frontend_load()) {
+                    return;
+                }
             }
 
             include_once(__DIR__ . '/../templates/attachment.php');
