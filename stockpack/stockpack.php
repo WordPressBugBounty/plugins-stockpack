@@ -5,7 +5,7 @@
  * Description: Direct image search in WordPress for Unsplash, Adobe Stock, Getty Images, iStock, Pixabay, Pexels and Deposit Photos
  * Author: Derikon Development
  * Author URI: https://derikon.com/
- * Version:3.4.5
+ * Version:3.4.6
  * Text Domain: stockpack
  * Domain Path: /languages
  *
@@ -147,7 +147,7 @@ if ( ! class_exists( 'Stockpack' ) ) {
 
     function stockpack_frontend_load() {
         $load = false;
-        if ( isset( $_GET['et_fb'] ) || isset ( $_GET['bricks'] ) || isset ( $_GET['ct_builder'] ) || isset( $_GET['fl_builder'] ) || isset( $_GET['fb-edit'] ) || isset( $_GET['brizy-edit-iframe'] ) ) {
+        if ( isset( $_GET['et_fb'] ) || isset ( $_GET['bricks'] ) || isset ( $_GET['ct_builder'] ) || (isset( $_GET['fl_builder']) && !isset($_GET['fl_builder_ui_iframe']) ) || isset( $_GET['fb-edit'] ) || isset( $_GET['brizy-edit-iframe'] ) ) {
             $load = true;
         }
 

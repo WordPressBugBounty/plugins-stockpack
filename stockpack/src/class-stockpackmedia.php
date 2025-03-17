@@ -93,7 +93,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                 wp_register_script( 'wp-color-picker', "/wp-admin/js/color-picker.min.js", array( 'mediaelement' ), false, 1 );
             }
 
-            $this->enqueue_dialog_js();
+            $this->register_dialog_js();
 
             wp_enqueue_script( $script, plugins_url( '/dist/js/' . $name, STOCKPACK_DIR ), array(
                 'media-views',
@@ -158,9 +158,33 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
             $this->load_frontend_style();
         }
 
+        public function register_dialog_js()
+        {
+            if(wp_script_is('jquery-ui-dialog') === false) {
+                wp_register_script('jquery-ui-dialog', "/wp-includes/js/jquery/ui/dialog.min.js", array(
+                    'jquery-ui-resizable',
+                    'jquery-ui-draggable',
+                    'jquery-ui-button',
+                    'jquery-ui-position'
+                ), false, 1);
+            }
+        }
+
         public function enqueue_admin_script_tag() {
             echo '<script src="' . plugins_url( '/dist/js/stockpack-load-admin.js', STOCKPACK_DIR ) . '"></script>';
         }
+
+        public function enqueue_dialog_script_tag() {
+            echo '<script src="' . includes_url( '/js/jquery/ui/resizable.js' ) . '"></script>';
+            echo '<script src="' . includes_url( '/js/jquery/ui/draggable.js' ) . '"></script>';
+            echo '<script src="' . includes_url( '/js/jquery/ui/button.js' ) . '"></script>';
+            echo '<script src="' . includes_url( '/js/jquery/ui/dialog.js' ) . '"></script>';
+        }
+
+        public function enqueue_dialog_style_tag() {
+            echo '<link rel="stylesheet" href="' . includes_url( '/css/jquery-ui-dialog.css' ) . '"></style>';
+        }
+
         public function enqueue_admin_script_localization() {
             $strings = $this->settings(array(),null);
             echo '<script type="text/javascript">
@@ -211,7 +235,9 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
 
             }
 
-            if ( ( isset( $_GET['fl_builder'] ) ) ) {
+            if ( ( isset( $_GET['fl_builder'] ) )&& !isset($_GET['fl_builder_iframe']) ) {
+                add_action( 'wp_head', array( $this, 'enqueue_dialog_style_tag'), 100 );
+                add_action( 'wp_footer', array( $this, 'enqueue_dialog_script_tag'), 100 );
                 add_action( 'wp_footer', array( $this, 'enqueue_admin_script_tag' ), 100 );
             }
 
@@ -587,16 +613,15 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
             return $strings;
         }
 
-        public function enqueue_dialog_js() {
-            if ( wp_script_is( 'jquery-ui-dialog' ) === false ) {
-                wp_register_script( 'jquery-ui-dialog', "/wp-includes/js/jquery/ui/dialog.min.js", array(
-                    'jquery-ui-resizable',
-                    'jquery-ui-draggable',
-                    'jquery-ui-button',
-                    'jquery-ui-position'
-                ), false, 1 );
-            }
+
+
+        public function enque_dialog_js() {
+            wp_enqueue_script( 'jquery-ui-dialog', "/wp-includes/js/jquery/ui/dialog.min.js", array(
+                'media-editor',
+            ), false, 1  );
         }
+
+
 
         private function getProviders()
         {

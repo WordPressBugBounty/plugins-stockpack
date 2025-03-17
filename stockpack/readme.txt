@@ -2,8 +2,8 @@
 Contributors: ionut.calara
 Tags: stock images, adobe stock, unsplash, getty, istock, pixabay, pexels
 Requires at least: 4.6
-Tested up to: 6.6.2
-Stable tag: 3.4.5
+Tested up to: 6.7.2
+Stable tag: 3.4.6
 License: GPL
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -133,10 +133,13 @@ There are some providers like unsplash and pixabay which allow you to use the im
 
 == Changelog ==
 
+= 3.4.6 =
+Fixed a compatibility issue with Beaver builder
+
 = 3.4.5 =
 Fixed backwards compatibility issue with DIVI
 
-= 3.4.5 =
+= 3.4.3 =
 Fe load bugfix
 
 = 3.4.3 =
