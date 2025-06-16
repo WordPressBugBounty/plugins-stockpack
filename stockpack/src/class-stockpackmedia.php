@@ -62,6 +62,11 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
          */
         public function enqueue( $admin = true, $no_dialog = false ) {
             global $pagenow;
+
+            if(stockpack_early_admin_enqueue()){
+                wp_enqueue_media();
+            }
+
             if(did_action('wp_enqueue_media') || (isset($_GET['page']) && $_GET['page'] === 'stockpack') || stockpack_frontend_load()) {
                 $this->enqueue_scripts($admin);
                 $this->enqueue_styles($no_dialog);
@@ -99,7 +104,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                 'media-views',
                 'wp-color-picker',
                 'jquery-ui-dialog'
-            ), $this->version, true );
+            ), $this->version, !stockpack_early_admin_enqueue() );
 
             // make sure divi media library is added after
             if ( wp_script_is( 'et_pb_media_library' ) === true ) {
@@ -216,7 +221,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
 
         public function actions() {
             add_action( 'admin_head', array( $this, 'templates' ) );
-            add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin' ), 99 );
+            add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin' ), stockpack_early_admin_enqueue() ? 1 : 99 );
             add_action( 'elementor/editor/after_enqueue_styles', array( $this, 'enqueue_elementor_before' ) );
             add_action( 'elementor/editor/footer', array( $this, 'templates' ) );
             // elementor is special
