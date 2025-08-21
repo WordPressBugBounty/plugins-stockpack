@@ -305,11 +305,15 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
 
             do_action( 'stockpack_before_attachment_download', $provider,$new_filename, $media_id, $must_license );
 
+            $big_image_threshold = (int) apply_filters( 'big_image_size_threshold', 2560, array( 0, 0 ), '', 0 );
+
             $image = $this->call( 'GET', 'images/download',
                 array(
                     'id'           => $media_id,
                     'must_license' => $must_license,
-                    'provider'     => $provider
+                    'provider'     => $provider,
+                    'min_width'=> $big_image_threshold,
+                    'min_height'=> $big_image_threshold,
                 )
             );
 

@@ -2,8 +2,8 @@
 Contributors: ionut.calara
 Tags: stock images, adobe stock, unsplash, getty, istock, pixabay, pexels
 Requires at least: 4.6
-Tested up to: 6.8.1
-Stable tag: 3.4.7
+Tested up to: 6.8.2
+Stable tag: 3.5.0
 License: GPL
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -38,8 +38,7 @@ Watermarked assets can also be used for testing as demo images.
 * Direct download to your server
 * Automatic caption fill in to be in line with licensing requirements
 * Set custom filename prior to the upload
-* Compatible with Gutenberg, [Elementor](https://elementor.com),[Bricks](https://bricksbuilder.io/), [Divi](https://www.elegantthemes.com/gallery/divi/), [Beaver Builder](https://www.wpbeaverbuilder.com), [Visual Composer](https://visualcomposer.com), [Avada Fusion Builder](https://theme-fusion.com/products/fusion-builder), [Oxygen Builder](https://oxygenbuilder.com), [WPBakery](https://wpbakery.com/), [Thrive Themes](https://thrivethemes.com/),
-[Breakdance](https://breakdance.com/)
+* Compatible with Gutenberg, [Elementor](https://elementor.com),[Bricks](https://bricksbuilder.io/), [Divi](https://www.elegantthemes.com/gallery/divi/), [Beaver Builder](https://www.wpbeaverbuilder.com), [Visual Composer](https://visualcomposer.com), [Avada Fusion Builder](https://theme-fusion.com/products/fusion-builder), [Oxygen Builder](https://oxygenbuilder.com), [WPBakery](https://wpbakery.com/), [Thrive Themes](https://thrivethemes.com/), [Breakdance](https://breakdance.com/)
 * Compatible with [WPML](https://wpml.org)
 * Featured image caption
 * Source citation option for all images
@@ -133,6 +132,9 @@ There are some providers like unsplash and pixabay which allow you to use the im
 1. Open media library and go to the StockPack tab as highlighted in the first screenshot
 
 == Changelog ==
+
+= 3.5.0 =
+Add big image threshold compatibility with download (only supported by Unsplash) to reduce image size.
 
 = 3.4.7 =
 Added BreakDance compatibility

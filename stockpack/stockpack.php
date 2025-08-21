@@ -5,7 +5,7 @@
  * Description: Direct image search in WordPress for Unsplash, Adobe Stock, Getty Images, iStock, Pixabay, Pexels and Deposit Photos
  * Author: Derikon Development
  * Author URI: https://derikon.com/
- * Version:3.4.7
+ * Version:3.5.0
  * Text Domain: stockpack
  * Domain Path: /languages
  *
