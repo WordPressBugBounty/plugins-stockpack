@@ -347,6 +347,10 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                     case 'token_expired':
                         return new WP_Error( 'license_cost_failure', __( 'Please reconnect the account on StockPack, the permissions have expired. Go the providers page on stockpack.co/providers', 'stockpack' ) );
                 }
+
+                if ( ! empty( $response->message ) ) {
+                    return new WP_Error( $response->code, $response->message );
+                }
             }
 
             return new WP_Error( 'license_cost_failure', __( 'There has been a problem fetching the cost. Please try to reconnect the account on the providers page on stockpack.co/providers', 'stockpack' ) );
@@ -357,6 +361,10 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 switch ( $response->code ) {
                     case 'token_expired':
                         return new WP_Error( 'token_expired', __( 'Please reconnect the account on StockPack, the permissions have expired. Go the providers page on stockpack.co/providers', 'stockpack' ) );
+                }
+
+                if ( ! empty( $response->message ) ) {
+                    return new WP_Error( $response->code, $response->message );
                 }
             }
 
