@@ -25,7 +25,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
         /**
          * @var string plugin version
          */
-        public $version = '3.2.4';
+        public $version = '3.5.2';
 
         /**
          * Returns the *Singleton* instance of this class.

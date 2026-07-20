@@ -2,8 +2,8 @@
 Contributors: ionut.calara
 Tags: stock images, adobe stock, unsplash, getty, istock, pixabay, pexels
 Requires at least: 4.6
-Tested up to: 6.9.4
-Stable tag: 3.5.1
+Tested up to: 7.0.2
+Stable tag: 3.5.2
 License: GPL
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -132,6 +132,9 @@ There are some providers like unsplash and pixabay which allow you to use the im
 1. Open media library and go to the StockPack tab as highlighted in the first screenshot
 
 == Changelog ==
+
+= 3.5.2 =
+Fix overlapping search and provider labels in the media modal on WordPress 7.0.
 
 = 3.5.1 =
 Surface the actual provider error message on download/license failures instead of showing a misleading "reconnect the account" notice.
