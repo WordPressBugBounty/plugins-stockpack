@@ -1,8 +1,8 @@
 <script type="text/html" id="tmpl-stockpack-attachment-details">
 <h2>
-	Image Details <span class="settings-save-status">
+	<?php _e( 'Image Details', 'stockpack' ); ?> <span class="settings-save-status">
 				<span class="spinner"></span>
-				<span class="saved">Saved.</span>
+				<span class="saved"><?php _e( 'Saved.', 'stockpack' ); ?></span>
 			</span>
 </h2>
 <div class="attachment-info">

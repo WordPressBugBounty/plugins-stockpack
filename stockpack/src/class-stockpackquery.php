@@ -72,6 +72,11 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 'license_cost'
             ) ); // executed when logged in
             add_action( 'wp_ajax_download-stockpack', array( $this, 'download' ) ); // executed when logged in
+            add_action( 'wp_ajax_generate-stockpack', array( $this, 'generate' ) ); // executed when logged in
+            add_action( 'wp_ajax_generate_status-stockpack', array(
+                $this,
+                'generate_status'
+            ) ); // executed when logged in
             add_action( 'wp_ajax_cache-stockpack', array( $this, 'cache' ) ); // executed when logged in
             add_action( 'wp_ajax_validate-stockpack', array( $this, 'validate' ) ); // executed when logged in
             add_action( 'wp_ajax_terms-stockpack', array( $this, 'terms' ) ); // executed when logged in
@@ -125,7 +130,32 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 $response->data->cost_message = __( 'You will be charged for one image on you provider account', 'stockpack' );
             }
 
+            if ( $this->already_in_library( $media_id ) ) {
+                $response->data->cost_message = __( 'This image is already in your library. Adding it again reuses the file you downloaded before, so it will not use another download.', 'stockpack' );
+            }
+
             wp_send_json_success( $response->data, true );
+        }
+
+        private function already_in_library( $media_id ) {
+            if ( ! $media_id ) {
+                return false;
+            }
+
+            $query = new WP_Query( array(
+                'post_type'      => 'attachment',
+                'post_status'    => 'inherit',
+                'fields'         => 'ids',
+                'posts_per_page' => 1,
+                'meta_query'     => array(
+                    array(
+                        'key'   => 'stockpack_id',
+                        'value' => $media_id
+                    )
+                )
+            ) );
+
+            return $query->have_posts();
         }
 
         public function token() {
@@ -180,6 +210,93 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
             }
 
             wp_send_json_success( $this->format( $images->data ) );
+        }
+
+        public function generate() {
+            check_ajax_referer( 'stockpack_generate', 'security' );
+            if ( ! current_user_can( 'upload_files' ) ) {
+                wp_send_json_error( array( 'message' => __( 'You are not allowed to upload files', 'stockpack' ) ) );
+            }
+
+            /** @var StockPack $stockpack */
+            $stockpack = StockPack::get_instance();
+            if ( ! $stockpack->settings->get_api_key() ) {
+                wp_send_json_error( array(
+                    'message' => __( 'Add your StockPack API key in the plugin settings before generating images.',
+                        'stockpack' )
+                ) );
+            }
+
+            $args = array(
+                'action' => $this->request_value( 'generate_action', 'generate' ),
+            );
+
+            if ( 'upscale' === $args['action'] ) {
+                $args['image_url']    = esc_url_raw( $this->request_value( 'image_url' ) );
+                $args['scale_factor'] = (int) $this->request_value( 'scale_factor', 2 );
+
+                if ( ! $args['image_url'] ) {
+                    wp_send_json_error( array( 'message' => __( 'Pick an image to upscale.', 'stockpack' ) ) );
+                }
+            } else {
+                $args['prompt']     = $this->request_value( 'prompt' );
+                $args['model']      = $this->request_value( 'model', 'mystic-25' );
+                $args['resolution'] = $this->request_value( 'resolution', '2k' );
+
+                $refine = esc_url_raw( $this->request_value( 'refine_url' ) );
+
+                if ( $refine ) {
+                    $args['refine_url'] = $refine;
+                }
+
+                if ( ! $args['prompt'] ) {
+                    wp_send_json_error( array( 'message' => __( 'Describe the image you want first.', 'stockpack' ) ) );
+                }
+            }
+
+            $response = $this->call( 'POST', 'generate', $args );
+
+            if ( is_wp_error( $response ) ) {
+                wp_send_json_error( $this->error_payload( $response ) );
+            }
+
+            if ( isset( $response->error ) ) {
+                wp_send_json_error( $this->handle_search_errors( $response ) );
+            }
+
+            wp_send_json_success( $response->data );
+        }
+
+        public function generate_status() {
+            check_ajax_referer( 'stockpack_generate', 'security' );
+            if ( ! current_user_can( 'upload_files' ) ) {
+                wp_send_json_error( array( 'message' => __( 'You are not allowed to upload files', 'stockpack' ) ) );
+            }
+
+            $task = $this->request_value( 'task' );
+            if ( ! $task ) {
+                wp_send_json_error( array( 'message' => __( 'Unknown generation task.', 'stockpack' ) ) );
+            }
+
+            $response = $this->call( 'GET', 'generate/' . rawurlencode( $task ) );
+
+            if ( is_wp_error( $response ) ) {
+                wp_send_json_error( $this->error_payload( $response ) );
+            }
+
+            if ( isset( $response->error ) ) {
+                wp_send_json_error( $this->handle_search_errors( $response ) );
+            }
+
+            wp_send_json_success( $response->data );
+        }
+
+        private function request_value( $key, $default = '' ) {
+            if ( ! isset( $_REQUEST[ $key ] ) ) {
+                return $default;
+            }
+
+            return sanitize_text_field( wp_unslash( $_REQUEST[ $key ] ) );
         }
 
         /**
@@ -276,6 +393,12 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
         }
 
         public function images( $query = [] ) {
+            if ( empty( $query['provider'] ) ) {
+                $available = $this->settings->get_available_search_provider_slugs();
+                if ( $available ) {
+                    $query['available_providers'] = implode( ',', $available );
+                }
+            }
 
             return $this->call( 'GET', 'images/search', $query );
         }
@@ -299,6 +422,25 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 'provider' => $provider
             ) );
 
+        }
+
+        public function get_ai_prices() {
+            $cached = get_transient( 'stockpack_ai_prices' );
+
+            if ( is_array( $cached ) ) {
+                return $cached;
+            }
+
+            $response = $this->call( 'GET', 'generate/prices' );
+            $prices   = array();
+
+            if ( isset( $response->data ) ) {
+                $prices = json_decode( wp_json_encode( $response->data ), true );
+            }
+
+            set_transient( 'stockpack_ai_prices', $prices, $prices ? DAY_IN_SECONDS : 5 * MINUTE_IN_SECONDS );
+
+            return $prices;
         }
 
         public function image( $media_id, $post_id, $description = '', $search = '', $must_license = 0, $provider = 0, $new_filename = '' ) {
@@ -417,14 +559,31 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 ]
             );
 
-            $url = $this->url . '/' . self::VERSION . '/' . $path . '?' . http_build_query( $query );
+            $url     = $this->url . '/' . self::VERSION . '/' . $path;
+            $is_post = 'post' === strtolower( $method );
+
+            if ( ! $is_post ) {
+                $url .= '?' . http_build_query( $query );
+            }
 
             do_action( 'stockpack_before_api_request', $url, $query );
 
-            $response = wp_remote_get( $url, array(
-                'timeout' => 10,
-                'sslverify' => false,
-            ) );
+            $headers = array( 'Accept' => 'application/json' );
+
+            if ( $is_post ) {
+                $response = wp_remote_post( $url, array(
+                    'timeout'   => 20,
+                    'sslverify' => false,
+                    'headers'   => $headers,
+                    'body'      => $query,
+                ) );
+            } else {
+                $response = wp_remote_get( $url, array(
+                    'timeout'   => apply_filters( 'stockpack_api_timeout', $this->timeout_for( $path ), $path ),
+                    'sslverify' => false,
+                    'headers'   => $headers,
+                ) );
+            }
 
             do_action( 'stockpack_after_api_request', $url, $query, $response );
 
@@ -440,13 +599,38 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                     case 401: // access denied
                         return $this->invalid_token( $response );
                     default:
-                        return new WP_Error( 1, __( 'Can\'t connect to StockPack server.', 'stockpack' ) );
+                        return $this->server_error( $response, $response_code );
                 }
             }
 
             $response_body = wp_remote_retrieve_body( $response );
 
             return json_decode( $response_body );
+        }
+
+        private function timeout_for( $path ) {
+            return strpos( $path, 'images/download' ) === 0 ? 30 : 10;
+        }
+
+        private function error_payload( $error ) {
+            return array(
+                'code'    => $error->get_error_code(),
+                'message' => $error->get_error_message(),
+            );
+        }
+
+        private function server_error( $response, $response_code ) {
+            $body = json_decode( wp_remote_retrieve_body( $response ) );
+
+            if ( ! empty( $body->message ) ) {
+                return new WP_Error( ! empty( $body->code ) ? $body->code : 1, $body->message );
+            }
+
+            return new WP_Error( 1, sprintf(
+                /* translators: %d: HTTP status code returned by the StockPack API */
+                __( 'The StockPack server returned an error (HTTP %d). If this keeps happening, contact StockPack support.', 'stockpack' ),
+                $response_code
+            ) );
         }
 
         private function limit_exceeded( $response ) {
@@ -509,6 +693,9 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
             }
             $type = wp_remote_retrieve_header( $get, 'content-type' );
             if ( ! $type ) {
+                $type = wp_check_filetype( $name )['type'];
+            }
+            if ( ! $type ) {
                 return new WP_Error( 100, __( 'Image type couldn\'t be determined', 'stockpack' ) );
             }
             $name = $this->update_extension( $name, $type );
@@ -524,8 +711,23 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
             );
             $attach_id = wp_insert_attachment( $attachment, $mirror['file'], $parent_id );
             require_once( ABSPATH . 'wp-admin/includes/image.php' );
+
+            // An upscale that WordPress immediately scales back down is an
+            // upscale the user paid for and did not get, so the threshold is
+            // lifted for the result of one. Priority 999 so it wins over a theme
+            // or plugin that lowers it.
+            $is_upscale = isset( $image->data->meta->action ) && 'upscale' === $image->data->meta->action;
+
+            if ( $is_upscale ) {
+                add_filter( 'big_image_size_threshold', '__return_false', 999 );
+            }
+
             $attach_data = wp_generate_attachment_metadata( $attach_id, $mirror['file'] );
             wp_update_attachment_metadata( $attach_id, $attach_data );
+
+            if ( $is_upscale ) {
+                remove_filter( 'big_image_size_threshold', '__return_false', 999 );
+            }
             update_post_meta( $attach_id, '_wp_attachment_image_alt', $description );
             $this->store_attachment_meta($attach_id,$image);
 
@@ -537,11 +739,12 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
 
         private function store_attachment_meta($attach_id, $image){
             $data = $image->data;
+            $meta = isset($data->meta) ? $data->meta : new stdClass();
             update_post_meta($attach_id,'stockpack_media_id',$data->id);
-            update_post_meta($attach_id,'stockpack_provider',$data->meta->provider);
-            update_post_meta($attach_id,'stockpack_author_url',$data->meta->author_url);
-            update_post_meta($attach_id,'stockpack_author_name',$data->meta->author_name);
-            update_post_meta($attach_id,'stockpack_image_url',$data->meta->image_url);
+            update_post_meta($attach_id,'stockpack_provider',isset($meta->provider) ? $meta->provider : '');
+            update_post_meta($attach_id,'stockpack_author_url',isset($meta->author_url) ? $meta->author_url : '');
+            update_post_meta($attach_id,'stockpack_author_name',isset($meta->author_name) ? $meta->author_name : '');
+            update_post_meta($attach_id,'stockpack_image_url',isset($meta->image_url) ? $meta->image_url : '');
             update_post_meta($attach_id,'stockpack_download_timestamp',time());
         }
 

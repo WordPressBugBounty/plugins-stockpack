@@ -37,8 +37,8 @@
 </div>
 <# if ( data.buttons.check ) { #>
 <button type="button" class="check" tabindex="-1"><span class="media-modal-icon"></span><span
-        class="screen-reader-text">Deselect</span></button>
+        class="screen-reader-text"><?php _e( 'Deselect', 'stockpack' ); ?></span></button>
 <button type="button" class="download" tabindex="-1"><span class="
-dashicons-download"></span><span class="screen-reader-text">Download</span></button>
+dashicons-download"></span><span class="screen-reader-text"><?php _e( 'Download', 'stockpack' ); ?></span></button>
 <# } #>
 </script>

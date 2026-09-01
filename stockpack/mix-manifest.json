@@ -6,5 +6,6 @@
     "/dist/css/stockpack-settings.css": "/dist/css/stockpack-settings.css",
     "/dist/css/stockpack-mlo-compatibility.css": "/dist/css/stockpack-mlo-compatibility.css",
     "/dist/css/stockpack.css": "/dist/css/stockpack.css",
-    "/dist/js/stockpack-settings.js": "/dist/js/stockpack-settings.js"
+    "/dist/js/stockpack-settings.js": "/dist/js/stockpack-settings.js",
+    "/dist/js/stockpack-upscale.js": "/dist/js/stockpack-upscale.js"
 }

@@ -73,12 +73,33 @@ class StockpackSettings {
         return $this->get_option( 'providers', 'stockpack_basics', array(
             'Adobe Stock'=> 'Adobe Stock',
             'Deposit Photos'=> 'Deposit Photos',
+            'Freepik'=> 'Freepik',
+            'Magnific AI'=> 'Magnific AI',
             'Getty'=> 'Getty',
             'iStock'=> 'iStock',
             'Pixabay'  => 'Pixabay',
             'Pexels'  => 'Pexels',
             'Unsplash'  => 'Unsplash',
         ) );
+    }
+
+    public function get_available_search_provider_slugs() {
+        $slugs = array();
+        foreach ( (array) $this->get_selected_providers_setting() as $provider ) {
+            $slug = strtolower( str_replace( ' ', '_', trim( $provider ) ) );
+            if ( '' === $slug || 'magnific_ai' === $slug ) {
+                continue;
+            }
+            $slugs[] = $slug;
+        }
+
+        return $slugs;
+    }
+
+    public function get_selected_ai_models() {
+        $selected = $this->get_option( 'ai_models', 'stockpack_basics', null );
+
+        return is_array( $selected ) ? array_keys( array_filter( $selected ) ) : null;
     }
 
     /**

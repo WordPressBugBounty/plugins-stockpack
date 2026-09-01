@@ -268,6 +268,46 @@ class StockpackAdmin {
         );
     }
 
+    private function ai_models(): array {
+        $prices = StockPack::get_instance()->query->get_ai_prices();
+
+        return isset( $prices['models'] ) && is_array( $prices['models'] ) ? $prices['models'] : array();
+    }
+
+    private function ai_model_options(): array {
+        $options = array();
+
+        foreach ( $this->ai_models() as $key => $model ) {
+            $price = isset( $model['eur'] ) ? sprintf( ' (€%s)', rtrim( rtrim( number_format( (float) $model['eur'], 3 ), '0' ), '.' ) ) : '';
+
+            $options[ $key ] = ( isset( $model['label'] ) ? $model['label'] : $key ) . $price;
+        }
+
+        return $options;
+    }
+
+    private function ai_model_defaults(): array {
+        $defaults = array();
+
+        foreach ( $this->ai_models() as $key => $model ) {
+            if ( ! empty( $model['default'] ) ) {
+                $defaults[ $key ] = $key;
+            }
+        }
+
+        return $defaults;
+    }
+
+    private function ai_models_description(): string {
+        $all = count( $this->ai_models() );
+
+        return sprintf(
+            /* translators: %d: total number of models offered by the provider */
+            __( 'Choose which models appear in the generate dropdown. %d are available and prices are per image, charged to the Magnific account you connect. Cheaper models are good for trying out a prompt; switch to a dearer one once you are happy with it.', 'stockpack' ),
+            $all
+        );
+    }
+
     /**
      * @return array
      */
@@ -300,6 +340,8 @@ class StockpackAdmin {
                     'options' => array(
                         'Adobe Stock' => __( 'Adobe Stock', 'stockpack' ),
                         'Deposit Photos'  => __( 'Deposit Photos', 'stockpack' ),
+                        'Freepik'  => __( 'Freepik (Magnific)', 'stockpack' ),
+                        'Magnific AI'  => __( 'Magnific AI (generate)', 'stockpack' ),
                         'Getty'  => __( 'Getty Images', 'stockpack' ),
                         'iStock'  => __( 'iStock', 'stockpack' ),
                         'Pixabay'  => __( 'Pixabay', 'stockpack' ),
@@ -311,12 +353,22 @@ class StockpackAdmin {
                     'default' => [
                         'Adobe Stock'=> 'Adobe Stock',
                         'Deposit Photos'=> 'Deposit Photos',
+                        'Freepik'=> 'Freepik',
+                        'Magnific AI'=> 'Magnific AI',
                         'Getty'=> 'Getty',
                         'iStock'=> 'iStock',
                         'Pixabay'  => 'Pixabay',
                         'Pexels'  => 'Pexels',
                         'Unsplash'  => 'Unsplash',
                     ],
+                ),
+                array(
+                    'name'    => 'ai_models',
+                    'label'   => __( 'AI models available', 'stockpack' ),
+                    'desc'    => $this->ai_models_description(),
+                    'options' => $this->ai_model_options(),
+                    'type'    => 'multicheck',
+                    'default' => $this->ai_model_defaults(),
                 ),
                 array(
                     'name'    => 'file_name_change',

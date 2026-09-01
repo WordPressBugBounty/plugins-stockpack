@@ -10,7 +10,7 @@
 	<span class="author-info">{{ data.author_info }}</span>
 	<# } #>
 	<button type="button" class="notice-dismiss">
-		<span class="screen-reader-text">Dismiss this notice.</span>
+		<span class="screen-reader-text"><?php _e( 'Dismiss this notice.', 'stockpack' ); ?></span>
 	</button>
 </div>
 </script>

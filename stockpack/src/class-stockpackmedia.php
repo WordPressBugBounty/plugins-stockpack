@@ -25,7 +25,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
         /**
          * @var string plugin version
          */
-        public $version = '3.5.2';
+        public $version = '3.6.1';
 
         /**
          * Returns the *Singleton* instance of this class.
@@ -146,6 +146,58 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
             }
         }
 
+        public function upscale_row_action( $actions, $post ) {
+            if ( ! current_user_can( 'upload_files' ) || ! wp_attachment_is_image( $post->ID ) ) {
+                return $actions;
+            }
+
+            $source = function_exists( 'wp_get_original_image_url' )
+                ? wp_get_original_image_url( $post->ID )
+                : false;
+
+            $url = esc_url( $source ? $source : wp_get_attachment_url( $post->ID ) );
+
+            foreach ( array( 2, 4 ) as $factor ) {
+                $actions[ 'stockpack_upscale_' . $factor ] = sprintf(
+                    '<a href="#" class="stockpack-upscale" data-url="%s" data-factor="%d">%s</a>',
+                    $url,
+                    $factor,
+                    /* translators: %d: upscale factor, 2 or 4 */
+                    sprintf( esc_html__( 'Upscale %dx', 'stockpack' ), $factor )
+                );
+            }
+
+            return $actions;
+        }
+
+        public function enqueue_upscale() {
+            global $pagenow;
+
+            if ( 'upload.php' !== $pagenow || ! current_user_can( 'upload_files' ) ) {
+                return;
+            }
+
+            wp_enqueue_script( 'stockpack-upscale', plugins_url( '/dist/js/stockpack-upscale.js', STOCKPACK_DIR ),
+                array( 'jquery' ), $this->version, true );
+
+            wp_localize_script( 'stockpack-upscale', 'stockpackUpscale', array(
+                'nonceGenerate' => wp_create_nonce( 'stockpack_generate' ),
+                'nonceDownload' => wp_create_nonce( 'stockpack_download' ),
+                'editUrl'       => admin_url( 'post.php?action=edit&post=' ),
+                'strings'       => array(
+                    'confirm' => __( "Upscaling uses credits on your Magnific plan. Precision upscales are priced by the size of the result, usually 200 credits or more.\n\nUpscale this image?", 'stockpack' ),
+                    'working' => __( 'Upscaling with Magnific, this can take a minute. Keep this page open, or the upscale is still charged but the image is not saved.', 'stockpack' ),
+                    'saving'  => __( 'Saving the upscaled image to your media library. Keep this page open, it will open the image when it is done.', 'stockpack' ),
+                    'leaving' => __( 'The upscale is still running. Leaving now still costs credits, but the image will not be saved.', 'stockpack' ),
+                    'busy'    => __( 'An upscale is already running. Wait for it to finish before starting another.', 'stockpack' ),
+                    'done'    => __( 'Upscaled image saved. Opening it now...', 'stockpack' ),
+                    'timeout' => __( 'The upscale is taking longer than expected. Check your Magnific account before retrying.',
+                        'stockpack' ),
+                    'failed'  => __( 'The upscale could not be completed.', 'stockpack' ),
+                ),
+            ) );
+        }
+
         public function enqueue_frontend() {
             $this->enqueue( false );
         }
@@ -215,6 +267,8 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
          *
          */
         public function filters() {
+            add_filter( 'media_row_actions', array( $this, 'upscale_row_action' ), 10, 2 );
+            add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_upscale' ) );
             add_filter( 'media_view_strings', array( $this, 'tab_text' ), 10, 2 );
             add_filter( 'media_view_settings', array( $this, 'settings' ), 10, 2 );
         }
@@ -345,10 +399,29 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                 ],
                 'link'            => __( 'Set token', 'stockpack' ),
                 'search'          => __( 'Search images', 'stockpack' ),
+                'generate'        => [
+                    'prompt'  => __( 'Describe the image you want', 'stockpack' ),
+                    'button'  => __( 'Generate', 'stockpack' ),
+                    'clear'   => __( 'Clear', 'stockpack' ),
+                    'working' => __( 'Generating...', 'stockpack' ),
+                    'timeout' => __( 'The image is taking longer than expected. Check your Magnific account before retrying.', 'stockpack' ),
+                    'models'  => $this->ai_model_labels(),
+                    'credits' => $this->ai_model_costs(),
+                    'refine'  => [
+                        'label'    => __( 'Refine the selected image', 'stockpack' ),
+                        'hint'     => __( 'Select a generated image first, then refine it with a new prompt.', 'stockpack' ),
+                        'note'     => __( 'Refining sends the selected image along with your prompt. Magnific charges more for a reference image, so expect roughly double.', 'stockpack' ),
+                        'multiply' => $this->ai_refine_multiplier(),
+                    ],
+                    /* translators: %s: price per image, already formatted */
+                    'cost'    => __( '%s / image', 'stockpack' ),
+                    'note'    => __( 'Each image is charged to the Magnific account you connected. Generating through StockPack always costs, even when your plan shows unlimited generation inside the Magnific app.', 'stockpack' ),
+                ],
                 'close'           => __( 'Close', 'stockpack' ),
                 'download'        => __( 'Download', 'stockpack' ),
                 'licenseAction'   => __( 'License', 'stockpack' ),
                 'alreadyLicensed' => __( 'Licensed', 'stockpack' ),
+                'noFreeDownload'  => __( 'This provider has no free tier. Use License to download, it will tell you the cost first.', 'stockpack' ),
                 'license'         => __( 'Your token is not valid', 'stockpack' ),
                 'advanced'        => __( 'Advanced search', 'stockpack' ),
                 'filters'         => [
@@ -456,6 +529,16 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                         'message' => __( 'Before you download the first image you need to agree to the terms of service of Deposit Photos. This will only be asked once and then we will store it for all subsequent downloads. You are a direct user of the Deposit Photos website and their terms apply. ', 'stockpack' ),
                         'link'    => 'https://depositphotos.com/terms-of-use.html'
                     ],
+                    'freepik'        => [
+                        'title'   => __( 'Terms agreement', 'stockpack' ),
+                        'message' => __( 'Before you download the first image you need to agree to the terms of service of Magnific, formerly Freepik. This will only be asked once and then we will store it for all subsequent downloads. Downloads are made with your own Magnific account, so you are a direct user of their website and their terms apply. ', 'stockpack' ),
+                        'link'    => 'https://www.magnific.com/legal/terms-of-use'
+                    ],
+                    'magnific'       => [
+                        'title'   => __( 'Terms agreement', 'stockpack' ),
+                        'message' => __( 'Before you use the first generated image you need to agree to the terms of service of Magnific. This will only be asked once and then we will store it for all subsequent images. Images are generated on your own Magnific account, so you are a direct user of their website and their terms apply. ', 'stockpack' ),
+                        'link'    => 'https://www.magnific.com/legal/terms-of-use'
+                    ],
                 ],
                 'licensePopup'    => [
                     'proceed'         => __( 'Proceed', 'stockpack' ),
@@ -489,10 +572,16 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                         'external'         => __( 'Currently only sizes available trough the subscription package are supported by the plugin.  You can use the url bellow to license this directly on the Deposit Photos website, in case your account allows that. If you subscription expired renew it and retry.', 'stockpack' ),
                         'directLicenseUrl' => __( 'Deposit Photos License Page', 'stockpack' ),
                     ],
+                    'freepik'         => [
+                        'title'            => __( 'License and download', 'stockpack' ),
+                        'message'          => __( 'Magnific does not offer watermarked previews, so downloading an image gives you the full file straight away.', 'stockpack' ),
+                        'status'           => __( 'Fetching cost...', 'stockpack' ),
+                        'external'         => __( 'You can also download this image directly from the Magnific website with the account you connected.', 'stockpack' ),
+                        'directLicenseUrl' => __( 'Open on Magnific', 'stockpack' ),
+                    ],
                 ],
                 'attribution'     => [
                     'adobe_stock'    => [
-                        'author_info' => __( 'Image info is available in the sidebar', 'stockpack' ),
                         'message'     => __( 'You are searching images from', 'stockpack' ),
                         'link'        => 'https://stockpack.co/recommended/adobe_stock',
                         'link_title'  => 'Adobe Stock'
@@ -504,43 +593,49 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                         'link_title'  => ''
                     ],
                     'getty'          => [
-                        'author_info' => __( 'Image info is available in the sidebar', 'stockpack' ),
                         'message'     => __( 'You are searching images from', 'stockpack' ),
                         'link'        => 'https://stockpack.co/recommended/getty',
                         'link_title'  => 'Getty Images',
                         'warning'     => __( 'Watermarked images from Getty Images are allowed for test only (not publicly available), for up to 30 days following download', 'stockpack' ),
                     ],
                     'istock'         => [
-                        'author_info' => __( 'Image info is available in the sidebar', 'stockpack' ),
                         'message'     => __( 'You are searching images from', 'stockpack' ),
                         'link'        => 'https://stockpack.co/recommended/istock',
                         'link_title'  => 'iStock',
                         'warning'     => __( 'Watermarked images from iStock are allowed for test only (not publicly available), for up to 30 days following download', 'stockpack' ),
                     ],
                     'pixabay'        => [
-                        'author_info' => __( 'Author info is available in the sidebar', 'stockpack' ),
                         'message'     => __( 'You are searching images from', 'stockpack' ),
                         'link'        => 'https://stockpack.co/recommended/pixabay',
                         'link_title'  => 'Pixabay'
                     ],
                     'pexels'         => [
-                        'author_info' => __( 'Author info is available in the sidebar', 'stockpack' ),
                         'message'     => __( 'You are searching images from', 'stockpack' ),
                         'link'        => 'https://stockpack.co/recommended/pexels',
                         'link_title'  => 'Pexels'
                     ],
                     'unsplash'       => [
-                        'author_info' => __( 'Author info is available in the sidebar', 'stockpack' ),
                         'message'     => __( 'You are searching images from', 'stockpack' ),
                         'link'        => 'https://stockpack.co/recommended/unsplash',
                         'link_title'  => 'Unsplash'
                     ],
                     'deposit_photos' => [
-                        'author_info' => __( 'Author info is available in the sidebar', 'stockpack' ),
                         'message'     => __( 'You are searching images from', 'stockpack' ),
                         'link'        => 'https://stockpack.co/recommended/deposit_photos',
                         'link_title'  => 'Deposit Photos',
                         'warning'     => __( 'Watermarked images from Deposit Photos are allowed for testing only', 'stockpack' ),
+                    ],
+                    'freepik'        => [
+                        'author_info' => __( 'Beta. Runs on the Magnific API key you connect', 'stockpack' ),
+                        'message'     => __( 'You are searching images from', 'stockpack' ),
+                        'link'        => 'https://www.magnific.com',
+                        'link_title'  => 'Freepik',
+                    ],
+                    'magnific'       => [
+                        'author_info' => __( 'Beta. Runs on the Magnific API key you connect. Earlier images are shown while Magnific still hosts them; download the ones you want to keep.', 'stockpack' ),
+                        'message'     => __( 'You are generating images with', 'stockpack' ),
+                        'link'        => 'https://www.magnific.com',
+                        'link_title'  => 'Magnific',
                     ],
                 ],
                 'limit'           => [
@@ -601,12 +696,16 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                     'pexels'         => get_option( 'terms_accepted_pexels', false ),
                     'unsplash'       => get_option( 'terms_accepted_unsplash', false ),
                     'deposit_photos' => get_option( 'terms_accepted_deposit_photos', false ),
+                    'freepik'        => get_option( 'terms_accepted_freepik', false ),
+                    'magnific'       => get_option( 'terms_accepted_magnific', false ),
                 ],
+                'cache_key'                => substr( md5( get_current_blog_id() . '|' . get_current_user_id() ), 0, 12 ),
                 'nonce_terms'              => wp_create_nonce( 'stockpack_terms' ),
                 'nonce_license_cost'       => wp_create_nonce( 'stockpack_license_cost' ),
                 'nonce_query'              => wp_create_nonce( 'stockpack_query' ),
                 'nonce_download'           => wp_create_nonce( 'stockpack_download' ),
                 'nonce_cache'              => wp_create_nonce( 'stockpack_cache' ),
+                'nonce_generate'           => wp_create_nonce( 'stockpack_generate' ),
                 'nonce_token'              => wp_create_nonce( 'stockpack_token' ),
                 'nonce_validate'           => wp_create_nonce( 'stockpack_validate' ),
                 'settings_url'             => admin_url( 'options-general.php?page=stockpack' ),
@@ -628,12 +727,64 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
 
 
 
+        private function ai_models() {
+            $prices = StockPack::get_instance()->query->get_ai_prices();
+
+            if ( isset( $prices['models'] ) && is_array( $prices['models'] ) && $prices['models'] ) {
+                return $prices['models'];
+            }
+
+            return array(
+                'flux-1'    => array( 'label' => 'Flux.1', 'eur' => 0.01, 'default' => true ),
+                'mystic-25' => array( 'label' => 'Mystic 2.5', 'eur' => 0.10, 'default' => true ),
+            );
+        }
+
+        private function enabled_ai_models() {
+            $models   = $this->ai_models();
+            $selected = $this->settings->get_selected_ai_models();
+
+            if ( $selected === null ) {
+                return array_filter( $models, function ( $model ) {
+                    return ! empty( $model['default'] );
+                } );
+            }
+
+            $enabled = array_intersect_key( $models, array_flip( $selected ) );
+
+            return $enabled ?: $models;
+        }
+
+        private function ai_model_labels() {
+            return array_map( function ( $model ) {
+                return isset( $model['label'] ) ? $model['label'] : '';
+            }, $this->enabled_ai_models() );
+        }
+
+        private function ai_model_costs() {
+            return array_map( function ( $model ) {
+                if ( ! isset( $model['eur'] ) ) {
+                    return '';
+                }
+
+                return '€' . rtrim( rtrim( number_format( (float) $model['eur'], 3 ), '0' ), '.' );
+            }, $this->enabled_ai_models() );
+        }
+
+        private function ai_refine_multiplier() {
+            $prices = StockPack::get_instance()->query->get_ai_prices();
+
+            return isset( $prices['refine_multiplier'] ) ? (int) $prices['refine_multiplier'] : 2;
+        }
+
         private function getProviders()
         {
             $selected_providers = $this->settings->get_selected_providers_setting();
             $providers = array(
                 'Adobe Stock' => __('Adobe Stock', 'stockpack'),
                 'Deposit Photos' => __('Deposit Photos', 'stockpack'),
+                'Freepik' => __('Freepik (Magnific, beta)', 'stockpack'),
+                'Magnific AI' => __('Magnific AI (generate, beta)', 'stockpack'),
                 'Getty' => __('Getty Images', 'stockpack'),
                 'iStock' => __('iStock', 'stockpack'),
                 'Pixabay' => __('Pixabay', 'stockpack'),
