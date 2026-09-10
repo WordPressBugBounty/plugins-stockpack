@@ -264,7 +264,7 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 wp_send_json_error( $this->handle_search_errors( $response ) );
             }
 
-            wp_send_json_success( $response->data );
+            wp_send_json_success( $this->with_wallet( $response->data ) );
         }
 
         public function generate_status() {
@@ -288,7 +288,11 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 wp_send_json_error( $this->handle_search_errors( $response ) );
             }
 
-            wp_send_json_success( $response->data );
+            if ( isset( $response->data->status ) && 'pending' === $response->data->status ) {
+                wp_send_json_success( $response->data );
+            }
+
+            wp_send_json_success( $this->with_wallet( $response->data ) );
         }
 
         private function request_value( $key, $default = '' ) {
@@ -431,6 +435,32 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 return $cached;
             }
 
+            return $this->fetch_ai_prices();
+        }
+
+        public function get_ai_wallet( $fresh = false ) {
+            $cached = get_transient( 'stockpack_ai_wallet' );
+
+            if ( is_array( $cached ) && ! $fresh ) {
+                return $cached;
+            }
+
+            $prices = $this->fetch_ai_prices();
+
+            if ( ! $prices && is_array( $cached ) ) {
+                return $cached;
+            }
+
+            return $this->wallet_from( $prices );
+        }
+
+        public function dashboard_url( $path = '' ) {
+            $base = defined( 'STOCKPACK_DASHBOARD_URL' ) ? STOCKPACK_DASHBOARD_URL : 'https://stockpack.co';
+
+            return rtrim( $base, '/' ) . ( $path ? '/' . ltrim( $path, '/' ) : '' );
+        }
+
+        private function fetch_ai_prices() {
             $response = $this->call( 'GET', 'generate/prices' );
             $prices   = array();
 
@@ -440,7 +470,34 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
 
             set_transient( 'stockpack_ai_prices', $prices, $prices ? DAY_IN_SECONDS : 5 * MINUTE_IN_SECONDS );
 
+            if ( $prices ) {
+                set_transient( 'stockpack_ai_wallet', $this->wallet_from( $prices ), MINUTE_IN_SECONDS );
+            }
+
             return $prices;
+        }
+
+        private function wallet_from( $prices ) {
+            $wallet  = isset( $prices['wallet'] ) && is_array( $prices['wallet'] ) ? $prices['wallet'] : array();
+            $balance = isset( $wallet['balance'] ) ? (int) $wallet['balance'] : null;
+
+            return array(
+                'mode'         => isset( $wallet['mode'] ) ? $wallet['mode'] : 'byok',
+                'balance'      => $balance,
+                'balance_text' => null === $balance ? '' : number_format_i18n( $balance ),
+                'top_up_url'   => ! empty( $wallet['top_up_url'] ) ? $wallet['top_up_url'] : $this->dashboard_url( 'billing/credits' ),
+                'connect_url'  => $this->dashboard_url( 'providers' ),
+            );
+        }
+
+        private function with_wallet( $data ) {
+            $wallet = $this->get_ai_wallet();
+
+            if ( 'managed' === $wallet['mode'] ) {
+                $data->wallet = $this->get_ai_wallet( true );
+            }
+
+            return $data;
         }
 
         public function image( $media_id, $post_id, $description = '', $search = '', $must_license = 0, $provider = 0, $new_filename = '' ) {
@@ -475,7 +532,7 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
                 return $attachment_id;
             }
             if ( ! $attachment_id ) {
-                return new WP_Error( __( 'upload_failure', 'There has been a problem with the upload. Please try again', 'stockpack' ) );
+                return new WP_Error( 'upload_failure', __( 'There has been a problem with the upload. Please try again', 'stockpack' ) );
             }
 
             update_post_meta( $attachment_id, 'stockpack_id', $media_id );
@@ -613,17 +670,30 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
         }
 
         private function error_payload( $error ) {
-            return array(
+            $payload = array(
                 'code'    => $error->get_error_code(),
                 'message' => $error->get_error_message(),
             );
+            $wallet  = $this->get_ai_wallet();
+
+            if ( 'insufficient_credits' === $payload['code'] ) {
+                $data                 = $error->get_error_data();
+                $payload['link']      = ! empty( $data->top_up_url ) ? $data->top_up_url : $wallet['top_up_url'];
+                $payload['link_text'] = __( 'Top up credits', 'stockpack' );
+            }
+
+            if ( 'managed' === $wallet['mode'] ) {
+                $payload['wallet'] = $this->get_ai_wallet( true );
+            }
+
+            return $payload;
         }
 
         private function server_error( $response, $response_code ) {
             $body = json_decode( wp_remote_retrieve_body( $response ) );
 
             if ( ! empty( $body->message ) ) {
-                return new WP_Error( ! empty( $body->code ) ? $body->code : 1, $body->message );
+                return new WP_Error( ! empty( $body->code ) ? $body->code : 1, $body->message, $body );
             }
 
             return new WP_Error( 1, sprintf(

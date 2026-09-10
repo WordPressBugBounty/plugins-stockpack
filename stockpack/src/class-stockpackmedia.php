@@ -25,7 +25,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
         /**
          * @var string plugin version
          */
-        public $version = '3.6.1';
+        public $version = '3.7.0';
 
         /**
          * Returns the *Singleton* instance of this class.
@@ -184,6 +184,8 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                 'nonceGenerate' => wp_create_nonce( 'stockpack_generate' ),
                 'nonceDownload' => wp_create_nonce( 'stockpack_download' ),
                 'editUrl'       => admin_url( 'post.php?action=edit&post=' ),
+                'wallet'        => $this->ai_wallet(),
+                'upscale'       => $this->upscale_quotes(),
                 'strings'       => array(
                     'confirm' => __( "Upscaling uses credits on your Magnific plan. Precision upscales are priced by the size of the result, usually 200 credits or more.\n\nUpscale this image?", 'stockpack' ),
                     'working' => __( 'Upscaling with Magnific, this can take a minute. Keep this page open, or the upscale is still charged but the image is not saved.', 'stockpack' ),
@@ -194,6 +196,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                     'timeout' => __( 'The upscale is taking longer than expected. Check your Magnific account before retrying.',
                         'stockpack' ),
                     'failed'  => __( 'The upscale could not be completed.', 'stockpack' ),
+                    'topUp'   => __( 'Top up credits', 'stockpack' ),
                 ),
             ) );
         }
@@ -396,6 +399,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                     'premium_limit_reached'   => __( 'Premium account requests limit reached', 'stockpack' ),
                     'free_limit_reached'      => __( 'Free account requests limit reached', 'stockpack' ),
                     'anonymous_limit_reached' => __( 'Anonymous requests limit reached', 'stockpack' ),
+                    'insufficient_credits'    => __( 'Not enough credits', 'stockpack' ),
                 ],
                 'link'            => __( 'Set token', 'stockpack' ),
                 'search'          => __( 'Search images', 'stockpack' ),
@@ -415,7 +419,8 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                     ],
                     /* translators: %s: price per image, already formatted */
                     'cost'    => __( '%s / image', 'stockpack' ),
-                    'note'    => __( 'Each image is charged to the Magnific account you connected. Generating through StockPack always costs, even when your plan shows unlimited generation inside the Magnific app.', 'stockpack' ),
+                    'note'    => $this->ai_cost_note(),
+                    'wallet'  => $this->ai_wallet_l10n(),
                 ],
                 'close'           => __( 'Close', 'stockpack' ),
                 'download'        => __( 'Download', 'stockpack' ),
@@ -536,7 +541,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                     ],
                     'magnific'       => [
                         'title'   => __( 'Terms agreement', 'stockpack' ),
-                        'message' => __( 'Before you use the first generated image you need to agree to the terms of service of Magnific. This will only be asked once and then we will store it for all subsequent images. Images are generated on your own Magnific account, so you are a direct user of their website and their terms apply. ', 'stockpack' ),
+                        'message' => $this->ai_terms_message(),
                         'link'    => 'https://www.magnific.com/legal/terms-of-use'
                     ],
                 ],
@@ -632,8 +637,9 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                         'link_title'  => 'Freepik',
                     ],
                     'magnific'       => [
-                        'author_info' => __( 'Beta. Runs on the Magnific API key you connect. Earlier images are shown while Magnific still hosts them; download the ones you want to keep.', 'stockpack' ),
-                        'message'     => __( 'You are generating images with', 'stockpack' ),
+                        'author_info' => $this->ai_attribution(),
+                        /* translators: attribution required by Magnific, shown directly before a link reading "Magnific" */
+                        'message'     => __( 'Powered by', 'stockpack' ),
                         'link'        => 'https://www.magnific.com',
                         'link_title'  => 'Magnific',
                     ],
@@ -727,11 +733,23 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
 
 
 
+        private function sellable_ai_models( $models ) {
+            if ( 'managed' !== $this->ai_mode() ) {
+                return $models;
+            }
+
+            $sellable = array_filter( $models, function ( $model ) {
+                return isset( $model['wallet_credits'] );
+            } );
+
+            return $sellable ?: $models;
+        }
+
         private function ai_models() {
             $prices = StockPack::get_instance()->query->get_ai_prices();
 
             if ( isset( $prices['models'] ) && is_array( $prices['models'] ) && $prices['models'] ) {
-                return $prices['models'];
+                return $this->sellable_ai_models( $prices['models'] );
             }
 
             return array(
@@ -762,13 +780,130 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
         }
 
         private function ai_model_costs() {
-            return array_map( function ( $model ) {
+            $managed = 'managed' === $this->ai_mode();
+
+            return array_map( function ( $model ) use ( $managed ) {
+                if ( $managed ) {
+                    return isset( $model['wallet_credits'] ) ? $this->format_credits( $model['wallet_credits'] ) : '';
+                }
+
                 if ( ! isset( $model['eur'] ) ) {
                     return '';
                 }
 
                 return '€' . rtrim( rtrim( number_format( (float) $model['eur'], 3 ), '0' ), '.' );
             }, $this->enabled_ai_models() );
+        }
+
+        private function ai_wallet() {
+            return StockPack::get_instance()->query->get_ai_wallet();
+        }
+
+        private function ai_mode() {
+            $wallet = $this->ai_wallet();
+
+            return $wallet['mode'];
+        }
+
+        private function ai_wallet_l10n() {
+            return $this->ai_wallet() + array(
+                /* translators: %s: credit balance, already formatted */
+                'balance_label' => __( 'Balance: %s credits', 'stockpack' ),
+                'top_up'        => __( 'Top up', 'stockpack' ),
+                'connect'       => __( 'Connect Magnific', 'stockpack' ),
+                'unavailable'   => __( 'Image generation is not set up for this site yet. Connect your own Magnific key on stockpack.co, or buy StockPack credits.', 'stockpack' ),
+            );
+        }
+
+        private function ai_cost_note() {
+            if ( 'managed' === $this->ai_mode() ) {
+                return __( 'Each image is paid from your StockPack credits at the price shown, and refining costs double. Nothing is charged to a Magnific account.', 'stockpack' );
+            }
+
+            return __( 'Each image is charged to the Magnific account you connected. Generating through StockPack always costs, even when your plan shows unlimited generation inside the Magnific app.', 'stockpack' );
+        }
+
+        private function ai_terms_message() {
+            if ( 'managed' === $this->ai_mode() ) {
+                return __( 'Before you use the first generated image you need to agree to the terms of service of Magnific. This will only be asked once and then we will store it for all subsequent images. Images are generated on the StockPack Magnific account and paid from your StockPack credits, and Magnific terms still govern the images you receive. ', 'stockpack' );
+            }
+
+            return __( 'Before you use the first generated image you need to agree to the terms of service of Magnific. This will only be asked once and then we will store it for all subsequent images. Images are generated on your own Magnific account, so you are a direct user of their website and their terms apply. ', 'stockpack' );
+        }
+
+        private function ai_attribution() {
+            if ( 'managed' === $this->ai_mode() ) {
+                return __( 'Runs on your StockPack credits. Earlier images are shown while Magnific still hosts them; download the ones you want to keep.', 'stockpack' );
+            }
+
+            return __( 'Beta. Runs on the Magnific API key you connect. Earlier images are shown while Magnific still hosts them; download the ones you want to keep.', 'stockpack' );
+        }
+
+        private function format_credits( $credits ) {
+            $credits = (int) $credits;
+
+            return sprintf(
+                /* translators: %s: number of credits, already formatted */
+                _n( '%s credit', '%s credits', $credits, 'stockpack' ),
+                number_format_i18n( $credits )
+            );
+        }
+
+        private function upscale_quotes() {
+            $wallet = $this->ai_wallet();
+            $prices = StockPack::get_instance()->query->get_ai_prices();
+            $quotes = array();
+
+            foreach ( array( 2, 4 ) as $factor ) {
+                $quotes[ $factor ] = $this->upscale_quote( $factor, $wallet, $prices );
+            }
+
+            return $quotes;
+        }
+
+        private function upscale_quote( $factor, $wallet, $prices ) {
+            if ( 'unavailable' === $wallet['mode'] ) {
+                $strings = $this->ai_wallet_l10n();
+
+                return array( 'refuse' => $strings['unavailable'] );
+            }
+
+            if ( 'managed' !== $wallet['mode'] ) {
+                return array();
+            }
+
+            if ( ! isset( $prices['upscale']['wallet_credits'][ $factor ] ) ) {
+                return array(
+                    /* translators: %d: upscale factor, 2 or 4 */
+                    'refuse' => sprintf( __( 'Upscale %dx is not available on StockPack credits yet. Connect your own Magnific key to upscale.', 'stockpack' ), $factor ),
+                    'link'   => false,
+                );
+            }
+
+            $credits = (int) $prices['upscale']['wallet_credits'][ $factor ];
+            $balance = (int) $wallet['balance'];
+
+            if ( $balance < $credits ) {
+                return array(
+                    'refuse' => sprintf(
+                        /* translators: 1: upscale factor, 2: credits needed, 3: current balance, both already formatted */
+                        __( 'Upscale %1$dx needs %2$s credits and your balance is %3$s. Top up on stockpack.co first.', 'stockpack' ),
+                        $factor,
+                        number_format_i18n( $credits ),
+                        number_format_i18n( $balance )
+                    ),
+                );
+            }
+
+            return array(
+                'confirm' => sprintf(
+                    /* translators: 1: upscale factor, 2: credits, already formatted, 3: balance after the upscale, already formatted */
+                    __( 'Upscale %1$dx for %2$s credits? Balance after: %3$s.', 'stockpack' ),
+                    $factor,
+                    number_format_i18n( $credits ),
+                    number_format_i18n( $balance - $credits )
+                ),
+            );
         }
 
         private function ai_refine_multiplier() {

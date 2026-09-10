@@ -19,7 +19,7 @@ class StockpackAdmin {
     /**
      * @var string plugin version
      */
-    public $version = '3.2.4';
+    public $version = '3.7.0';
 
     /**
      * Returns the *Singleton* instance of this class.
@@ -87,6 +87,8 @@ class StockpackAdmin {
         $this->settings_api->set_fields( $this->get_settings_fields() );
 
         //initialize them
+        add_action( 'wsa_form_top_stockpack_basics', array( $this, 'credits_line' ) );
+
         $this->settings_api->admin_init();
     }
 
@@ -270,20 +272,83 @@ class StockpackAdmin {
 
     private function ai_models(): array {
         $prices = StockPack::get_instance()->query->get_ai_prices();
+        $models = isset( $prices['models'] ) && is_array( $prices['models'] ) ? $prices['models'] : array();
 
-        return isset( $prices['models'] ) && is_array( $prices['models'] ) ? $prices['models'] : array();
+        if ( ! $models || ! $this->managed_credits() ) {
+            return $models;
+        }
+
+        $sellable = array_filter( $models, function ( $model ) {
+            return isset( $model['wallet_credits'] );
+        } );
+
+        return $sellable ?: $models;
     }
 
     private function ai_model_options(): array {
         $options = array();
+        $managed = $this->managed_credits();
 
         foreach ( $this->ai_models() as $key => $model ) {
-            $price = isset( $model['eur'] ) ? sprintf( ' (€%s)', rtrim( rtrim( number_format( (float) $model['eur'], 3 ), '0' ), '.' ) ) : '';
+            if ( $managed ) {
+                $price = isset( $model['wallet_credits'] ) ? sprintf( ' (%s)', $this->format_credits( $model['wallet_credits'] ) ) : '';
+            } else {
+                $price = isset( $model['eur'] ) ? sprintf( ' (€%s)', rtrim( rtrim( number_format( (float) $model['eur'], 3 ), '0' ), '.' ) ) : '';
+            }
 
             $options[ $key ] = ( isset( $model['label'] ) ? $model['label'] : $key ) . $price;
         }
 
         return $options;
+    }
+
+    private function ai_wallet(): array {
+        return StockPack::get_instance()->query->get_ai_wallet();
+    }
+
+    private function managed_credits(): bool {
+        $wallet = $this->ai_wallet();
+
+        return 'managed' === $wallet['mode'];
+    }
+
+    private function format_credits( $credits ): string {
+        $credits = (int) $credits;
+
+        return sprintf(
+            /* translators: %s: number of credits, already formatted */
+            _n( '%s credit', '%s credits', $credits, 'stockpack' ),
+            number_format_i18n( $credits )
+        );
+    }
+
+    public function credits_line() {
+        $wallet = $this->ai_wallet();
+
+        if ( 'byok' === $wallet['mode'] ) {
+            return;
+        }
+
+        if ( 'unavailable' === $wallet['mode'] ) {
+            printf(
+                '<p class="description stockpack-credits-line">%s <a href="%s" target="_blank" rel="noopener">%s</a> · <a href="%s" target="_blank" rel="noopener">%s</a></p>',
+                esc_html__( 'Image generation is not set up for this site yet. Connect your own Magnific key on stockpack.co, or buy StockPack credits.', 'stockpack' ),
+                esc_url( $wallet['connect_url'] ),
+                esc_html__( 'Connect Magnific', 'stockpack' ),
+                esc_url( $wallet['top_up_url'] ),
+                esc_html__( 'Top up credits', 'stockpack' )
+            );
+
+            return;
+        }
+
+        printf(
+            '<p class="description stockpack-credits-line">%s · <a href="%s" target="_blank" rel="noopener">%s</a></p>',
+            /* translators: %s: credit balance, already formatted */
+            esc_html( sprintf( __( 'Credits: %s', 'stockpack' ), $wallet['balance_text'] ) ),
+            esc_url( $wallet['top_up_url'] ),
+            esc_html__( 'Manage on stockpack.co', 'stockpack' )
+        );
     }
 
     private function ai_model_defaults(): array {
@@ -300,6 +365,19 @@ class StockpackAdmin {
 
     private function ai_models_description(): string {
         $all = count( $this->ai_models() );
+
+        if ( $this->managed_credits() ) {
+            return sprintf(
+                /* translators: %d: number of models sellable on StockPack credits */
+                _n(
+                    'Choose which models appear in the generate dropdown. %d is available on StockPack credits and its price is per image. Models Magnific does not let us resell stay available on your own Magnific key.',
+                    'Choose which models appear in the generate dropdown. %d are available on StockPack credits and prices are per image. Models Magnific does not let us resell stay available on your own Magnific key.',
+                    $all,
+                    'stockpack'
+                ),
+                $all
+            );
+        }
 
         return sprintf(
             /* translators: %d: total number of models offered by the provider */

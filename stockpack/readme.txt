@@ -1,9 +1,9 @@
 === StockPack – Stock photos and AI images from Unsplash, Adobe Stock, Freepik and more ===
 Contributors: ionut.calara
-Tags: stock images, adobe stock, unsplash, getty, istock, freepik, ai images
+Tags: stock images, adobe stock, magnific, unsplash, getty
 Requires at least: 4.6
-Tested up to: 7.0.4
-Stable tag: 3.6.1
+Tested up to: 7.1
+Stable tag: 3.7.0
 License: GPL
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -41,18 +41,18 @@ Magnific does not offer watermarked previews, so a Freepik download is always th
 
 Pick **Magnific AI** in the provider dropdown and you get a prompt box instead of a search box. Describe the image, choose a model, and the result lands in your media library like any other image.
 
-* **Choose your own models.** Enable the ones you want in Settings > StockPack, from a fast model at a fraction of a cent per image up to Mystic 2.5 for final artwork. The price per image is shown next to the button, and it follows the model you pick.
+* **Choose your own models.** Enable the ones you want in Settings > StockPack, from a fast model at a fraction of a cent per image up to Mystic 2.5 for final artwork. The price per image is shown next to the button, and it follows the model you pick. On StockPack credits the choice is Mystic 2.5, because Magnific only lets us resell the models they build themselves; the rest stay available on your own key.
 * **Refine instead of starting over.** Select an image you generated and tick "refine the selected image" to send it along with your next prompt.
 * **Upscale from the media library.** Hover any image and use Upscale 2x or 4x. It asks first, because upscales are priced by the size of the result. Magnific caps the result at 10060x10060 pixels, so 4x needs a source under about 2500px wide and refuses larger ones before anything is charged. The upscaled file is kept at full size rather than scaled down, so a large one can be tens of megabytes.
 * **Your generations stay on screen** so you can compare a prompt against what it came from, and a Clear action empties them when you are done. They are listed for as long as Magnific keeps hosting them: some models hand back short lived image links, so download anything you want to keep rather than treating the list as a gallery.
 
-This is a beta and it needs your own Magnific API key. Everything you generate or upscale is charged to your Magnific account at their prices, StockPack adds nothing on top. Note that generating through an API always consumes credits, even on a Magnific plan that shows unlimited generation in their own app.
+It works two ways. Connect your own Magnific API key in the StockPack dashboard and everything you generate or upscale is charged to your Magnific account at their prices, with nothing added on top. Or skip the key and pay from StockPack credits: prepaid packs start at $5, one credit is one US cent, the price per image in credits is shown next to the button and your balance beside it. There is no free tier or trial for generation. Credits buy Mystic 2.5, and prices are listed at https://stockpack.co/credits. Note that generating through an API always consumes credits, even on a Magnific plan that shows unlimited generation in their own app.
 
 
 **Features**
 
 * Search 430 million+ of images from stock providers
-* Generate images from a prompt with Magnific AI, and upscale existing ones (beta, your own API key)
+* Generate images from a prompt with Magnific AI, and upscale existing ones (beta, with your own API key or StockPack credits)
 * The cost per image is shown before you spend anything
 * Seamless WordPress integration with the media library
 * Direct download to your server
@@ -97,7 +97,7 @@ Every asset on Deposit Photos is available within the plugin search. You do not 
 Searching and downloading the Freepik photo library requires your own Magnific API key, which you create in your Magnific account and connect in the StockPack dashboard. There is no watermarked tier, so every download is the full image and uses one of the stock downloads included in your Magnific plan. Search is restricted to photos, because Freepik delivers vectors and PSDs as archives that WordPress cannot attach as images.
 
 - Magnific AI (generate)
-Generation and upscaling run on the same Magnific API key. Models and their per-image prices are listed in Settings > StockPack, where you choose which ones appear in the dropdown. Upscaling is priced by the size of the result rather than per image, and Magnific will not produce anything larger than 10060x10060 pixels. This is a beta.
+Generation and upscaling run on your Magnific API key when you have connected one, or on StockPack credits when you have not; the balance is shown next to the price and on the settings page. Models and their per-image prices are listed in Settings > StockPack, where you choose which ones appear in the dropdown. On credits that list is limited to the models Magnific allows us to resell. Upscaling runs on your own key for now and is priced by the size of the result; on credits it will follow once that size-based pricing is settled, and until then the plugin says so before anything is sent. Magnific will not produce anything larger than 10060x10060 pixels. This is a beta.
 
 
 == Screenshots ==
@@ -162,13 +162,23 @@ There are some providers like unsplash and pixabay which allow you to use the im
 This plugin talks to one external service: the StockPack API. Nothing is sent until you search, download, generate or upscale.
 
 **StockPack API** (api.stockpack.co)
-Every search, download, license check, generation and upscale goes to the StockPack API, which contacts the stock providers on your behalf. Your site never calls a provider's API directly. Each request sends your StockPack API token, your search terms or prompt or the id of the image you selected, and the address of your site, used as the referral so downloads can be attributed to your account. Provider accounts you connect, including Magnific, are stored on the StockPack API and not in your WordPress site.
+Every search, download, license check, generation and upscale goes to the StockPack API, which contacts the stock providers on your behalf. Your site never calls a provider's API directly. Each request sends your StockPack API token, your search terms or prompt or the id of the image you selected, and the address of your site, used as the referral so downloads can be attributed to your account. Provider accounts you connect, including Magnific, are stored on the StockPack API and not in your WordPress site. Buying credits happens on stockpack.co in your browser; the plugin only links there and never talks to a payment provider.
 Terms of service: https://stockpack.co/terms
 Privacy policy: https://stockpack.co/privacy
 
 When you insert an image your server fetches the file itself from the address the StockPack API returns, which is the provider's own CDN. Your browser loads result thumbnails from there as you browse.
 
 == Changelog ==
+
+= 3.7.0 =
+* Generate, refine and upscale without a Magnific key: sites that have not connected one pay from prepaid StockPack credits, with the price per image and your balance shown next to the button.
+* On credits the model list is limited to what Magnific allows us to resell; connect your own key for the full list.
+* A generation you cannot afford is refused before anything is charged, with a link to top up.
+* Upscaling stays on your own Magnific key for now; on credits it is refused up front with a clear message until its pricing is settled.
+* Sites with their own Magnific key keep paying Magnific directly at Magnific's prices.
+* Fixed: an upload failure showed its internal code instead of the message.
+* The plugin package now includes the source assets and build files.
+* Tags trimmed to five so the listing indexes them all.
 
 = 3.6.1 =
 * Fixed: with the provider filter on Default, a search could use a provider you had turned off in Settings > StockPack. The default now stays within the providers you enabled; picking which enabled provider is the default still happens on the stockpack.co providers page.
