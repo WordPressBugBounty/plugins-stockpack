@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the StockPack – Stock images in WordPress plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: StockPack – Stock images in WordPress 3.7.0\n"
+"Project-Id-Version: StockPack – Stock images in WordPress 3.7.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/stockpack\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-09T09:36:47+00:00\n"
+"POT-Creation-Date: 2026-09-25T10:01:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: stockpack\n"
@@ -175,6 +175,7 @@ msgid "Freepik (Magnific)"
 msgstr ""
 
 #: src/class-stockpackadmin.php:422
+#: src/class-stockpackmedia.php:922
 msgid "Magnific AI (generate)"
 msgstr ""
 
@@ -961,7 +962,7 @@ msgid "Runs on your StockPack credits. Earlier images are shown while Magnific s
 msgstr ""
 
 #: src/class-stockpackmedia.php:839
-msgid "Beta. Runs on the Magnific API key you connect. Earlier images are shown while Magnific still hosts them; download the ones you want to keep."
+msgid "Runs on the Magnific API key you connect. Earlier images are shown while Magnific still hosts them; download the ones you want to keep."
 msgstr ""
 
 #. translators: %d: upscale factor, 2 or 4
@@ -981,10 +982,6 @@ msgstr ""
 
 #: src/class-stockpackmedia.php:921
 msgid "Freepik (Magnific, beta)"
-msgstr ""
-
-#: src/class-stockpackmedia.php:922
-msgid "Magnific AI (generate, beta)"
 msgstr ""
 
 #: src/class-stockpackquery.php:126

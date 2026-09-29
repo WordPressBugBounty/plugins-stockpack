@@ -25,7 +25,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
         /**
          * @var string plugin version
          */
-        public $version = '3.7.0';
+        public $version = '3.7.1';
 
         /**
          * Returns the *Singleton* instance of this class.
@@ -836,7 +836,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                 return __( 'Runs on your StockPack credits. Earlier images are shown while Magnific still hosts them; download the ones you want to keep.', 'stockpack' );
             }
 
-            return __( 'Beta. Runs on the Magnific API key you connect. Earlier images are shown while Magnific still hosts them; download the ones you want to keep.', 'stockpack' );
+            return __( 'Runs on the Magnific API key you connect. Earlier images are shown while Magnific still hosts them; download the ones you want to keep.', 'stockpack' );
         }
 
         private function format_credits( $credits ) {
@@ -919,7 +919,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                 'Adobe Stock' => __('Adobe Stock', 'stockpack'),
                 'Deposit Photos' => __('Deposit Photos', 'stockpack'),
                 'Freepik' => __('Freepik (Magnific, beta)', 'stockpack'),
-                'Magnific AI' => __('Magnific AI (generate, beta)', 'stockpack'),
+                'Magnific AI' => __('Magnific AI (generate)', 'stockpack'),
                 'Getty' => __('Getty Images', 'stockpack'),
                 'iStock' => __('iStock', 'stockpack'),
                 'Pixabay' => __('Pixabay', 'stockpack'),

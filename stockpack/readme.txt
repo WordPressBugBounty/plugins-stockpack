@@ -3,7 +3,7 @@ Contributors: ionut.calara
 Tags: stock images, adobe stock, magnific, unsplash, getty
 Requires at least: 4.6
 Tested up to: 7.1
-Stable tag: 3.7.0
+Stable tag: 3.7.1
 License: GPL
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -37,7 +37,7 @@ Freepik renamed itself to Magnific in 2026. If you have a Magnific account, conn
 
 Magnific does not offer watermarked previews, so a Freepik download is always the full image and always uses one download from your plan. StockPack tells you that before you commit, and re-inserting an image already in your library costs nothing.
 
-= AI image generation and upscaling (beta) =
+= AI image generation and upscaling =
 
 Pick **Magnific AI** in the provider dropdown and you get a prompt box instead of a search box. Describe the image, choose a model, and the result lands in your media library like any other image.
 
@@ -52,7 +52,7 @@ It works two ways. Connect your own Magnific API key in the StockPack dashboard 
 **Features**
 
 * Search 430 million+ of images from stock providers
-* Generate images from a prompt with Magnific AI, and upscale existing ones (beta, with your own API key or StockPack credits)
+* Generate images from a prompt with Magnific AI, and upscale existing ones (with your own API key or StockPack credits)
 * The cost per image is shown before you spend anything
 * Seamless WordPress integration with the media library
 * Direct download to your server
@@ -170,6 +170,9 @@ When you insert an image your server fetches the file itself from the address th
 
 == Changelog ==
 
+= 3.7.1 =
+* Magnific AI is no longer marked beta.
+
 = 3.7.0 =
 * Generate, refine and upscale without a Magnific key: sites that have not connected one pay from prepaid StockPack credits, with the price per image and your balance shown next to the button.
 * On credits the model list is limited to what Magnific allows us to resell; connect your own key for the full list.
@@ -177,7 +180,6 @@ When you insert an image your server fetches the file itself from the address th
 * Upscaling stays on your own Magnific key for now; on credits it is refused up front with a clear message until its pricing is settled.
 * Sites with their own Magnific key keep paying Magnific directly at Magnific's prices.
 * Fixed: an upload failure showed its internal code instead of the message.
-* The plugin package now includes the source assets and build files.
 * Tags trimmed to five so the listing indexes them all.
 
 = 3.6.1 =
