@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-25T10:01:39+00:00\n"
+"POT-Creation-Date: 2026-10-05T09:45:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: stockpack\n"
@@ -272,54 +272,58 @@ msgstr ""
 msgid "This will log all external calls made and add them to wp-content/debug.log. Make sure you have space on the disk (a few hundred megabytes) and only keep this enabled for short periods of time"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:92
+#: src/class-stockpackcaptions.php:93
 #: src/class-stockpackmedia.php:408
 msgid "Generate"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:100
+#: src/class-stockpackcaptions.php:101
 msgid "Author"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:107
+#: src/class-stockpackcaptions.php:108
 msgid "Author URL"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:114
+#: src/class-stockpackcaptions.php:115
 msgid "Source"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:121
+#: src/class-stockpackcaptions.php:122
 msgid "Source URL"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:128
+#: src/class-stockpackcaptions.php:129
 #: src/class-stockpackmedia.php:427
 msgid "License"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:135
+#: src/class-stockpackcaptions.php:136
 msgid "License URL"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:142
+#: src/class-stockpackcaptions.php:143
 msgid "Mods"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:149
+#: src/class-stockpackcaptions.php:150
 msgid "Extra"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:237
+#: src/class-stockpackcaptions.php:168
+msgid "License history"
+msgstr ""
+
+#: src/class-stockpackcaptions.php:252
 #: src/class-stockpackquery.php:736
 msgid "Photo by"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:254
+#: src/class-stockpackcaptions.php:269
 msgid "on"
 msgstr ""
 
-#: src/class-stockpackcaptions.php:273
+#: src/class-stockpackcaptions.php:288
 msgid "used under"
 msgstr ""
 

@@ -60,6 +60,7 @@ if ( ! class_exists( 'StockpackCaptions' ) ) {
             add_filter( 'stockpack_caption', array( $this, 'add_caption_to_premium' ), 10, 2 );
             add_filter( 'attachment_fields_to_edit', array( $this, 'add_caption_fields' ), 10, 2 );
             add_filter( 'attachment_fields_to_save', array( $this, 'save_caption_fields' ), 10, 2 );
+            add_filter( 'attachment_fields_to_edit', array( $this, 'add_license_history_link' ), 20, 2 );
         }
 
         /**
@@ -152,6 +153,20 @@ if ( ! class_exists( 'StockpackCaptions' ) ) {
                 'helps' => 'You can use this field to add further description. It will show up first and create a new line',
             );
 
+
+            return $form_fields;
+        }
+
+        public function add_license_history_link( $form_fields, $post ) {
+            if ( ! get_post_meta( $post->ID, 'stockpack_id', true ) ) {
+                return $form_fields;
+            }
+
+            $form_fields['stockpack_license_history'] = array(
+                'label' => 'StockPack',
+                'input' => 'html',
+                'html'  => '<a href="' . esc_url( $this->query->dashboard_url( 'license-history?source=plugin' ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'License history', 'stockpack' ) . '</a>',
+            );
 
             return $form_fields;
         }

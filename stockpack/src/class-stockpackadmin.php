@@ -19,7 +19,7 @@ class StockpackAdmin {
     /**
      * @var string plugin version
      */
-    public $version = '3.7.1';
+    public $version = '3.7.2';
 
     /**
      * Returns the *Singleton* instance of this class.

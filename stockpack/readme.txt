@@ -3,7 +3,7 @@ Contributors: ionut.calara
 Tags: stock images, adobe stock, magnific, unsplash, getty
 Requires at least: 4.6
 Tested up to: 7.1
-Stable tag: 3.7.1
+Stable tag: 3.7.2
 License: GPL
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -169,6 +169,9 @@ Privacy policy: https://stockpack.co/privacy
 When you insert an image your server fetches the file itself from the address the StockPack API returns, which is the provider's own CDN. Your browser loads result thumbnails from there as you browse.
 
 == Changelog ==
+
+= 3.7.2 =
+* Images inserted with StockPack show a License history link in the attachment details.
 
 = 3.7.1 =
 * Magnific AI is no longer marked beta.
