@@ -704,24 +704,26 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
         }
 
         private function limit_exceeded( $response ) {
-            /** @var StockPack $stockpack */
-            $stockpack = StockPack::get_instance();
+            $codes = array(
+                'paid'      => 'premium_limit_reached',
+                'free'      => 'free_limit_reached',
+                'anonymous' => 'anonymous_limit_reached',
+            );
 
-
-            $limit = wp_remote_retrieve_header( $response, 'x-ratelimit-limit' );
+            $plan        = $this->plan_for( wp_remote_retrieve_header( $response, 'x-ratelimit-limit' ) );
             $retry_after = wp_remote_retrieve_header( $response, 'retry-after' );
             $retry_after = $this->human_seconds( $retry_after );
             $retry_after = '<span class ="stockpack-timer">' . $retry_after . '</span>';
-            if ( $limit > 50 ) {
-                return new WP_Error( 'premium_limit_reached', __( 'Request limit reached, the reset will be in ', 'stockpack' ) . $retry_after );
-            }
-            $api_key = $stockpack->admin->get_api_key();
-            if ( $api_key ) {
-                return new WP_Error( 'free_limit_reached', __( 'Request limit reached, the reset will be in ', 'stockpack' ) . $retry_after );
+
+            return new WP_Error( $codes[ $plan ], __( 'Request limit reached, the reset will be in ', 'stockpack' ) . $retry_after );
+        }
+
+        private function plan_for( $limit ) {
+            if ( (int) $limit > 50 ) {
+                return 'paid';
             }
 
-
-            return new WP_Error( 'anonymous_limit_reached', __( 'Request limit reached, the reset will be in ', 'stockpack' ) . $retry_after );
+            return StockPack::get_instance()->settings->get_api_key() ? 'free' : 'anonymous';
         }
 
         private function invalid_token( $response ) {
@@ -812,10 +814,14 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
             $meta = isset($data->meta) ? $data->meta : new stdClass();
             update_post_meta($attach_id,'stockpack_media_id',$data->id);
             update_post_meta($attach_id,'stockpack_provider',isset($meta->provider) ? $meta->provider : '');
+            update_post_meta($attach_id,'stockpack_provider_slug',isset($data->provider) ? $data->provider : '');
             update_post_meta($attach_id,'stockpack_author_url',isset($meta->author_url) ? $meta->author_url : '');
             update_post_meta($attach_id,'stockpack_author_name',isset($meta->author_name) ? $meta->author_name : '');
             update_post_meta($attach_id,'stockpack_image_url',isset($meta->image_url) ? $meta->image_url : '');
             update_post_meta($attach_id,'stockpack_download_timestamp',time());
+            if(!empty($data->license_record_id)){
+                update_post_meta($attach_id,'stockpack_license_record_id',(int) $data->license_record_id);
+            }
         }
 
         /**

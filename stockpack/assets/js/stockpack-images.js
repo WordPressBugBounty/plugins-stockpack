@@ -191,6 +191,21 @@ const StockpackImages = wp.media.View.extend( {
 			},
 		},
 		);
+		this.dialog.buttons( [
+			{
+				text: wp.media.view.l10n.stockpack.limit.cancel,
+				click: () => {
+					this.dialog.close();
+				},
+			},
+			{
+				text: wp.media.view.l10n.stockpack.limit.upgrade,
+				click: () => {
+					window.open( wp.media.view.settings.stockpack.pricing_url.limit_dialog, '_blank', 'noopener' );
+				},
+				class: 'button-primary stockpack-upgrade-button',
+			},
+		] );
 
 		this.dialog.open();
 	},

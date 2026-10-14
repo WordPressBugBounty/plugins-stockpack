@@ -25,7 +25,7 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
         /**
          * @var string plugin version
          */
-        public $version = '3.7.2';
+        public $version = '3.7.3';
 
         /**
          * Returns the *Singleton* instance of this class.
@@ -682,7 +682,8 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                     ],
                     'reset'     => __( 'Reset time passed, you can try again', 'stockpack' ),
                     'contact'   => __( 'Contact', 'stockpack' ),
-                    'cancel'    => __( 'Cancel', 'stockpack' )
+                    'cancel'    => __( 'Cancel', 'stockpack' ),
+                    'upgrade'   => __( 'Upgrade', 'stockpack' ),
                 ],
                 'filename'        => [
                     'placeholder' => __( 'Overwrite filename (No extension)' )
@@ -716,6 +717,9 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                 'nonce_validate'           => wp_create_nonce( 'stockpack_validate' ),
                 'settings_url'             => admin_url( 'options-general.php?page=stockpack' ),
                 'contact_url'              => 'https://stockpack.co/contact',
+                'pricing_url'              => [
+                    'limit_dialog' => $this->pricing_url( 'limit-dialog' ),
+                ],
                 'filename_change'          => $this->settings->get_file_name_change_setting(),
                 'premium_provider_caption' => $this->settings->get_premium_providers_caption_setting()
             );
@@ -724,6 +728,15 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
         }
 
 
+
+        private function pricing_url( $content ) {
+            return add_query_arg( array(
+                'utm_source'   => 'plugin',
+                'utm_medium'   => 'wp-admin',
+                'utm_campaign' => 'request-limit',
+                'utm_content'  => $content,
+            ), StockPack::get_instance()->query->dashboard_url( 'pricing' ) );
+        }
 
         public function enque_dialog_js() {
             wp_enqueue_script( 'jquery-ui-dialog', "/wp-includes/js/jquery/ui/dialog.min.js", array(

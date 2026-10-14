@@ -158,17 +158,62 @@ if ( ! class_exists( 'StockpackCaptions' ) ) {
         }
 
         public function add_license_history_link( $form_fields, $post ) {
-            if ( ! get_post_meta( $post->ID, 'stockpack_id', true ) ) {
+            if ( ! get_post_meta( $post->ID, 'stockpack_id', true ) || $this->is_ai_image( $post->ID ) ) {
                 return $form_fields;
             }
 
             $form_fields['stockpack_license_history'] = array(
                 'label' => 'StockPack',
                 'input' => 'html',
-                'html'  => '<a href="' . esc_url( $this->query->dashboard_url( 'license-history?source=plugin' ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'License history', 'stockpack' ) . '</a>',
+                'html'  => '<a href="' . esc_url( $this->license_history_url( $post->ID ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'License history', 'stockpack' ) . '</a>',
             );
 
             return $form_fields;
+        }
+
+        private function is_ai_image( $post_id ) {
+            $slug = get_post_meta( $post_id, 'stockpack_provider_slug', true );
+            $name = (string) get_post_meta( $post_id, 'stockpack_provider', true );
+
+            return in_array( $slug, array( 'magnific', 'magnific_ai' ), true ) || 0 === strpos( $name, 'Magnific' );
+        }
+
+        private function license_history_url( $post_id ) {
+            $record_id = (int) get_post_meta( $post_id, 'stockpack_license_record_id', true );
+
+            if ( $record_id ) {
+                return $this->query->dashboard_url( 'license-history/' . $record_id . '?source=plugin' );
+            }
+
+            $filters = array_filter( array(
+                'source'   => 'plugin',
+                'provider' => $this->provider_slug( $post_id ),
+                'image'    => get_post_meta( $post_id, 'stockpack_media_id', true ),
+            ) );
+
+            return $this->query->dashboard_url( 'license-history?' . http_build_query( $filters, '', '&' ) );
+        }
+
+        private function provider_slug( $post_id ) {
+            $slug = get_post_meta( $post_id, 'stockpack_provider_slug', true );
+
+            if ( $slug ) {
+                return $slug;
+            }
+
+            $slugs = array(
+                'Adobe Stock'    => 'adobe_stock',
+                'Deposit Photos' => 'deposit_photos',
+                'Freepik'        => 'freepik',
+                'Getty Images'   => 'getty',
+                'iStock'         => 'istock',
+                'Pexels'         => 'pexels',
+                'Pixabay'        => 'pixabay',
+                'Unsplash'       => 'unsplash',
+            );
+            $name = get_post_meta( $post_id, 'stockpack_provider', true );
+
+            return isset( $slugs[ $name ] ) ? $slugs[ $name ] : '';
         }
 
         function generate_license_link( $post, $attachment ) {
