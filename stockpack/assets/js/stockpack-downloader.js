@@ -77,7 +77,8 @@ const StockpackDownloader = wp.media.View.extend( {
 			action: 'license_cost-stockpack',
 			security: wp.media.view.settings.stockpack.nonce_license_cost,
 			media_id: this.model.id,
-			provider: this.getProvider()
+			provider: this.getProvider(),
+			no_free_download: this.noFreeDownload() ? 1 : 0,
 		} );
 		wp.media.ajax( options ).done( ( response ) => {
 			this.dialog.setStatus( response.cost_message );

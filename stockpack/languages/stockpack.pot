@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the StockPack – Stock images in WordPress plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: StockPack – Stock images in WordPress 3.7.3\n"
+"Project-Id-Version: StockPack – Stock images in WordPress 3.7.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/stockpack\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-14T09:25:32+00:00\n"
+"POT-Creation-Date: 2026-11-04T10:39:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: stockpack\n"
@@ -87,7 +87,7 @@ msgstr ""
 
 #: src/class-stockpackadmin.php:339
 #: src/class-stockpackmedia.php:199
-#: src/class-stockpackquery.php:682
+#: src/class-stockpackquery.php:685
 msgid "Top up credits"
 msgstr ""
 
@@ -130,24 +130,24 @@ msgstr ""
 
 #: src/class-stockpackadmin.php:408
 #: src/class-stockpackadmin.php:456
-#: src/class-stockpackadmin.php:469
-#: src/class-stockpackadmin.php:480
-#: src/class-stockpackadmin.php:491
-#: src/class-stockpackadmin.php:502
-#: src/class-stockpackadmin.php:513
-#: src/class-stockpackadmin.php:533
+#: src/class-stockpackadmin.php:481
+#: src/class-stockpackadmin.php:492
+#: src/class-stockpackadmin.php:503
+#: src/class-stockpackadmin.php:514
+#: src/class-stockpackadmin.php:525
+#: src/class-stockpackadmin.php:545
 #: src/class-stockpackmedia.php:491
 msgid "Yes"
 msgstr ""
 
 #: src/class-stockpackadmin.php:409
 #: src/class-stockpackadmin.php:457
-#: src/class-stockpackadmin.php:470
-#: src/class-stockpackadmin.php:481
-#: src/class-stockpackadmin.php:492
-#: src/class-stockpackadmin.php:503
-#: src/class-stockpackadmin.php:514
-#: src/class-stockpackadmin.php:534
+#: src/class-stockpackadmin.php:482
+#: src/class-stockpackadmin.php:493
+#: src/class-stockpackadmin.php:504
+#: src/class-stockpackadmin.php:515
+#: src/class-stockpackadmin.php:526
+#: src/class-stockpackadmin.php:546
 #: src/class-stockpackmedia.php:492
 msgid "No"
 msgstr ""
@@ -216,59 +216,79 @@ msgstr ""
 msgid "You can set the desired filename prior to download. This is a good SEO idea if you want it, but it's a small extra step"
 msgstr ""
 
-#: src/class-stockpackadmin.php:466
-msgid "Enable premium providers caption"
+#: src/class-stockpackadmin.php:464
+msgid "Image file name"
+msgstr ""
+
+#: src/class-stockpackadmin.php:465
+msgid "What the downloaded file name, and so the media library title, is built from. The provider file number looks like AdobeStock_123456789. A file name you type before download always wins"
 msgstr ""
 
 #: src/class-stockpackadmin.php:467
-msgid "You can enable automatic caption for premium providers if you want to"
+msgid "Image title (default)"
 msgstr ""
 
-#: src/class-stockpackadmin.php:477
-msgid "Enable caption fields"
+#: src/class-stockpackadmin.php:468
+msgid "Provider file number"
+msgstr ""
+
+#: src/class-stockpackadmin.php:469
+msgid "File number and title"
 msgstr ""
 
 #: src/class-stockpackadmin.php:478
-msgid "You can enable additional fields for images that you can use to standardize captions. This is generally used to provide credits."
+msgid "Enable premium providers caption"
 msgstr ""
 
-#: src/class-stockpackadmin.php:488
-msgid "Enable featured image caption"
+#: src/class-stockpackadmin.php:479
+msgid "You can enable automatic caption for premium providers if you want to"
 msgstr ""
 
 #: src/class-stockpackadmin.php:489
-msgid "You can enable captions for featured images to be appended. If you want to use this for non stockpack images, you also need the above setting."
+msgid "Enable caption fields"
 msgstr ""
 
-#: src/class-stockpackadmin.php:499
-msgid "Search with authorization"
+#: src/class-stockpackadmin.php:490
+msgid "You can enable additional fields for images that you can use to standardize captions. This is generally used to provide credits."
 msgstr ""
 
 #: src/class-stockpackadmin.php:500
-msgid "Providers that support oauth can get the license state for all images directly. You see it in the sidebar. The downside is that the searches are slower"
+msgid "Enable featured image caption"
 msgstr ""
 
-#: src/class-stockpackadmin.php:510
-msgid "Update file name with provider name and license state for premium providers"
+#: src/class-stockpackadmin.php:501
+msgid "You can enable captions for featured images to be appended. If you want to use this for non stockpack images, you also need the above setting."
 msgstr ""
 
 #: src/class-stockpackadmin.php:511
-msgid "By adding details to the image file name you can use unlicensed images as placeholders and if you use Gutenberg you can later license those images directly via StockBlock, the Gutenberg module from StockPack"
+msgid "Search with authorization"
+msgstr ""
+
+#: src/class-stockpackadmin.php:512
+msgid "Providers that support oauth can get the license state for all images directly. You see it in the sidebar. The downside is that the searches are slower"
+msgstr ""
+
+#: src/class-stockpackadmin.php:522
+msgid "Update file name with provider name and license state for premium providers"
 msgstr ""
 
 #: src/class-stockpackadmin.php:523
+msgid "By adding details to the image file name you can use unlicensed images as placeholders and if you use Gutenberg you can later license those images directly via StockBlock, the Gutenberg module from StockPack"
+msgstr ""
+
+#: src/class-stockpackadmin.php:535
 msgid "Download timeout in seconds"
 msgstr ""
 
-#: src/class-stockpackadmin.php:524
+#: src/class-stockpackadmin.php:536
 msgid "If you have issues downloading the images, increasing this might help"
 msgstr ""
 
-#: src/class-stockpackadmin.php:530
+#: src/class-stockpackadmin.php:542
 msgid "Enable URL debugging"
 msgstr ""
 
-#: src/class-stockpackadmin.php:531
+#: src/class-stockpackadmin.php:543
 msgid "This will log all external calls made and add them to wp-content/debug.log. Make sure you have space on the disk (a few hundred megabytes) and only keep this enabled for short periods of time"
 msgstr ""
 
@@ -315,7 +335,7 @@ msgid "License history"
 msgstr ""
 
 #: src/class-stockpackcaptions.php:297
-#: src/class-stockpackquery.php:738
+#: src/class-stockpackquery.php:741
 msgid "Photo by"
 msgstr ""
 
@@ -1000,84 +1020,88 @@ msgstr ""
 msgid "You will be charged for one image on you provider account"
 msgstr ""
 
-#: src/class-stockpackquery.php:134
+#: src/class-stockpackquery.php:136
 msgid "This image is already in your library. Adding it again reuses the file you downloaded before, so it will not use another download."
 msgstr ""
 
-#: src/class-stockpackquery.php:218
-#: src/class-stockpackquery.php:273
-#: src/class-stockpackquery.php:345
+#: src/class-stockpackquery.php:137
+msgid "This image is already in your library. Licensing it downloads the licensed file again and adds it as a new media item."
+msgstr ""
+
+#: src/class-stockpackquery.php:221
+#: src/class-stockpackquery.php:276
+#: src/class-stockpackquery.php:348
 msgid "You are not allowed to upload files"
 msgstr ""
 
-#: src/class-stockpackquery.php:225
+#: src/class-stockpackquery.php:228
 msgid "Add your StockPack API key in the plugin settings before generating images."
 msgstr ""
 
-#: src/class-stockpackquery.php:239
+#: src/class-stockpackquery.php:242
 msgid "Pick an image to upscale."
 msgstr ""
 
-#: src/class-stockpackquery.php:253
+#: src/class-stockpackquery.php:256
 msgid "Describe the image you want first."
 msgstr ""
 
-#: src/class-stockpackquery.php:278
+#: src/class-stockpackquery.php:281
 msgid "Unknown generation task."
 msgstr ""
 
-#: src/class-stockpackquery.php:332
+#: src/class-stockpackquery.php:335
 msgid "Image not found in cache"
 msgstr ""
 
-#: src/class-stockpackquery.php:535
+#: src/class-stockpackquery.php:538
 msgid "There has been a problem with the upload. Please try again"
 msgstr ""
 
-#: src/class-stockpackquery.php:547
-#: src/class-stockpackquery.php:562
+#: src/class-stockpackquery.php:550
+#: src/class-stockpackquery.php:565
 msgid "Please reconnect the account on StockPack, the permissions have expired. Go the providers page on stockpack.co/providers"
 msgstr ""
 
-#: src/class-stockpackquery.php:555
+#: src/class-stockpackquery.php:558
 msgid "There has been a problem fetching the cost. Please try to reconnect the account on the providers page on stockpack.co/providers"
 msgstr ""
 
-#: src/class-stockpackquery.php:570
+#: src/class-stockpackquery.php:573
 msgid "There has been a problem with the download. Try to reconnect the account for the provider on StockPack. If the issue persists, contact stockpack support."
 msgstr ""
 
-#: src/class-stockpackquery.php:577
+#: src/class-stockpackquery.php:580
 msgid "Please reconnect the account on stockpack, the permissions have expired. Go to the providers page on stockpack.co/providers"
 msgstr ""
 
-#: src/class-stockpackquery.php:581
+#: src/class-stockpackquery.php:584
 msgid "There has been a problem with the api, please check the accounts on the providers page in stockpack.co/providers"
 msgstr ""
 
 #. translators: %d: HTTP status code returned by the StockPack API
-#: src/class-stockpackquery.php:701
+#: src/class-stockpackquery.php:704
 msgid "The StockPack server returned an error (HTTP %d). If this keeps happening, contact StockPack support."
 msgstr ""
 
-#: src/class-stockpackquery.php:718
+#: src/class-stockpackquery.php:721
 msgid "Request limit reached, the reset will be in "
 msgstr ""
 
-#: src/class-stockpackquery.php:730
+#: src/class-stockpackquery.php:733
 msgid "Request denied. Please check your token!"
 msgstr ""
 
-#: src/class-stockpackquery.php:739
+#: src/class-stockpackquery.php:742
 msgctxt "Make sure to keep the space"
 msgid " on "
 msgstr ""
 
-#: src/class-stockpackquery.php:764
+#: src/class-stockpackquery.php:767
 msgid "Image download failed, please try again. Errors:"
 msgstr ""
 
-#: src/class-stockpackquery.php:771
+#: src/class-stockpackquery.php:774
 msgid "Image type couldn't be determined"
 msgstr ""
 

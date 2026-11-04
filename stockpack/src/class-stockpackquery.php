@@ -131,7 +131,10 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
             }
 
             if ( $this->already_in_library( $media_id ) ) {
-                $response->data->cost_message = __( 'This image is already in your library. Adding it again reuses the file you downloaded before, so it will not use another download.', 'stockpack' );
+                $no_free_download = isset( $_REQUEST['no_free_download'] ) && '1' === sanitize_text_field( $_REQUEST['no_free_download'] );
+                $response->data->cost_message = $no_free_download
+                    ? __( 'This image is already in your library. Adding it again reuses the file you downloaded before, so it will not use another download.', 'stockpack' )
+                    : trim( __( 'This image is already in your library. Licensing it downloads the licensed file again and adds it as a new media item.', 'stockpack' ) . ' ' . $response->data->cost_message );
             }
 
             wp_send_json_success( $response->data, true );
@@ -859,7 +862,12 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
         {
             $stockpack = StockPack::get_instance();
 
-            $filename = $image->data->name;
+            $filename = $this->build_filename(
+                $image->data->name,
+                $image->data->provider,
+                $image->data->id,
+                $stockpack->settings->get_file_name_source()
+            );
 
             if($new_filename) {
                 $filename = $new_filename;
@@ -874,6 +882,46 @@ if ( ! class_exists( 'StockpackQuery' ) ) {
             }
 
             return $filename;
+        }
+
+        public function build_filename( $name, $provider, $id, $source ) {
+            $id = (string) $id;
+
+            if ( 'title' === $source || '' === $id ) {
+                return $name;
+            }
+
+            $extension = pathinfo( $name, PATHINFO_EXTENSION );
+            $base = $this->provider_file_label( $provider ) . '_' . $id;
+
+            if ( 'title_file_number' === $source ) {
+                $title = preg_replace( '/-stockpack(-[a-z0-9]+)*$/i', '', $this->strip_extension( $name ) );
+                $title = trim( mb_substr( sanitize_file_name( $title ), 0, 120 ), '.-_' );
+                $base = $title ? $base . '-' . $title : $base;
+            }
+
+            return sanitize_file_name( $extension ? $base . '.' . $extension : $base );
+        }
+
+        private function provider_file_label( $provider ) {
+            $labels = array(
+                'adobe_stock'    => 'AdobeStock',
+                'deposit_photos' => 'Depositphotos',
+                'freepik'        => 'Freepik',
+                'getty'          => 'GettyImages',
+                'istock'         => 'iStock',
+                'magnific'       => 'Magnific',
+                'magnific_ai'    => 'MagnificAI',
+                'pexels'         => 'Pexels',
+                'pixabay'        => 'Pixabay',
+                'unsplash'       => 'Unsplash',
+            );
+
+            if ( isset( $labels[ $provider ] ) ) {
+                return $labels[ $provider ];
+            }
+
+            return str_replace( ' ', '', ucwords( str_replace( array( '_', '-' ), ' ', (string) $provider ) ) );
         }
 
         public function debug_wp_remote_post_and_get_request( $response, $context, $class, $r, $url ) {

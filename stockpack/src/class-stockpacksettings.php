@@ -53,6 +53,16 @@ class StockpackSettings {
         return $this->get_option( 'file_name_change', 'stockpack_basics' );
     }
 
+    public function get_file_name_source() {
+        $source = $this->get_option( 'file_name_source', 'stockpack_basics', 'title' );
+
+        if ( ! in_array( $source, array( 'title', 'file_number', 'title_file_number' ), true ) ) {
+            return 'title';
+        }
+
+        return $source;
+    }
+
     public function get_premium_providers_caption_setting() {
         return $this->get_option( 'caption_premium_providers', 'stockpack_advanced' );
     }

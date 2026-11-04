@@ -3,7 +3,7 @@ Contributors: ionut.calara
 Tags: stock images, adobe stock, magnific, unsplash, getty
 Requires at least: 4.6
 Tested up to: 7.1
-Stable tag: 3.7.3
+Stable tag: 3.7.4
 License: GPL
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -169,6 +169,10 @@ Privacy policy: https://stockpack.co/privacy
 When you insert an image your server fetches the file itself from the address the StockPack API returns, which is the provider's own CDN. Your browser loads result thumbnails from there as you browse.
 
 == Changelog ==
+
+= 3.7.4 =
+* New setting, Image file name: build the downloaded file name and the media library title from the image title, the provider file number (for example AdobeStock_123456789), or both. A file name typed before download still wins, and placeholder names for StockBlock keep working.
+* Fix: the License dialog no longer says a re-added image reuses the earlier file when licensing downloads it again.
 
 = 3.7.3 =
 * License history links in the attachment details now open the record for that image.

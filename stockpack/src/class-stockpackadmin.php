@@ -19,7 +19,7 @@ class StockpackAdmin {
     /**
      * @var string plugin version
      */
-    public $version = '3.7.3';
+    public $version = '3.7.4';
 
     /**
      * Returns the *Singleton* instance of this class.
@@ -458,6 +458,18 @@ class StockpackAdmin {
                     ),
                     'type'    => 'radio',
                     'default' => 'no',
+                ),
+                array(
+                    'name'    => 'file_name_source',
+                    'label'   => __( 'Image file name', 'stockpack' ),
+                    'desc'    => __( 'What the downloaded file name, and so the media library title, is built from. The provider file number looks like AdobeStock_123456789. A file name you type before download always wins', 'stockpack' ),
+                    'options' => array(
+                        'title'             => __( 'Image title (default)', 'stockpack' ),
+                        'file_number'       => __( 'Provider file number', 'stockpack' ),
+                        'title_file_number' => __( 'File number and title', 'stockpack' ),
+                    ),
+                    'type'    => 'radio',
+                    'default' => 'title',
                 )
             ),
             'stockpack_advanced' => array(
