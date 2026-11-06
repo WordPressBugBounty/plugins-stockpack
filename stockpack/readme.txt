@@ -3,7 +3,7 @@ Contributors: ionut.calara
 Tags: stock images, adobe stock, magnific, unsplash, getty
 Requires at least: 4.6
 Tested up to: 7.1
-Stable tag: 3.7.4
+Stable tag: 3.8.0
 License: GPL
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -169,6 +169,10 @@ Privacy policy: https://stockpack.co/privacy
 When you insert an image your server fetches the file itself from the address the StockPack API returns, which is the provider's own CDN. Your browser loads result thumbnails from there as you browse.
 
 == Changelog ==
+
+= 3.8.0 =
+* New search filters at the top of the StockPack window: Orientation (horizontal, vertical or square) and AI images (include, exclude or only AI). Options a provider cannot do are hidden for that provider.
+* New setting, Show search filters: on by default, turn it off if the filters cause a layout problem in your page builder.
 
 = 3.7.4 =
 * New setting, Image file name: build the downloaded file name and the media library title from the image title, the provider file number (for example AdobeStock_123456789), or both. A file name typed before download still wins, and placeholder names for StockBlock keep working.

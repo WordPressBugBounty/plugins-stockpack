@@ -21,6 +21,12 @@ import StockpackDownloader from './stockpack-downloader';
 import StockpackAttribution from './stockpack-attribution';
 import StockpackNoSearch from './stockpack-no-search';
 import StockpackProviderFilters from "./filters/stockpack-provider";
+import StockpackOrientationFilters from './filters/stockpack-orientations';
+import StockpackGenAiFilters from './filters/stockpack-gen-ai';
+import { filterSupport } from './filters/stockpack-filter-support';
+
+const SEARCH_AND_PROVIDER_WIDTH = 302;
+const TOOLBAR_PADDING = 32;
 
 const StockpackBrowser = wp.media.View.extend( /** @lends wp.media.view.AttachmentsBrowser.prototype */{
 	tagName: 'div',
@@ -51,6 +57,11 @@ const StockpackBrowser = wp.media.View.extend( /** @lends wp.media.view.Attachme
 	 */
 	dispose() {
 		this.options.selection.off( null, null, this );
+		this.collection.props.off( 'change:provider', this.applyFilterSupport, this );
+		this.controller.off( 'update_provider', this.applyReportedSupport, this );
+		if ( this.toolbarObserver ) {
+			this.toolbarObserver.disconnect();
+		}
 		wp.media.View.prototype.dispose.apply( this, arguments );
 		return this;
 	},
@@ -221,6 +232,7 @@ const StockpackBrowser = wp.media.View.extend( /** @lends wp.media.view.Attachme
 			priority: 65,
 		} ).render() );
 		this.createProviderFilter();
+		this.createSearchFilters();
 
 		// this.advancedFilters.set('advanced-link', new StockpackAdvancedLink({
 		//     controller: this.controller,
@@ -292,6 +304,58 @@ const StockpackBrowser = wp.media.View.extend( /** @lends wp.media.view.Attachme
 		// 	priority: 10,
 		// 	text: ' ',
 		// }));
+	},
+
+	createSearchFilters() {
+		if ( ! wp.media.view.settings.stockpack.show_search_filters ) {
+			return;
+		}
+
+		this.orientationFilter = new StockpackOrientationFilters( {
+			controller: this.controller,
+			model: this.collection.props,
+			priority: -90,
+		} ).render();
+		this.genAiFilter = new StockpackGenAiFilters( {
+			controller: this.controller,
+			model: this.collection.props,
+			priority: -80,
+		} ).render();
+
+		this.toolbar.set( 'orientation', this.orientationFilter );
+		this.toolbar.set( 'gen-ai', this.genAiFilter );
+		this.$el.addClass( 'has-search-filters' );
+
+		this.applyReportedSupport = _.debounce( this.applyFilterSupport, 150 );
+		this.collection.props.on( 'change:provider', this.applyFilterSupport, this );
+		this.controller.on( 'update_provider', this.applyReportedSupport, this );
+		this.applyFilterSupport();
+
+		this.toolbarObserver = new ResizeObserver( () => this.updateToolbarRows() );
+		this.toolbarObserver.observe( this.toolbar.el );
+	},
+
+	applyFilterSupport( reported ) {
+		const selected = this.collection.props.get( 'provider' );
+		const support = filterSupport( selected || ( _.isString( reported ) ? reported : '' ) );
+
+		this.orientationFilter.applySupport( support );
+		this.genAiFilter.applySupport( support );
+		this.updateToolbarRows();
+	},
+
+	updateToolbarRows() {
+		const toolbar = this.toolbar.el;
+
+		if ( ! toolbar.clientWidth || ! this.images ) {
+			return;
+		}
+
+		const filtersWidth = _.reduce( [ this.orientationFilter, this.genAiFilter ], ( width, filter ) => width + ( filter.el.offsetWidth ? filter.el.offsetWidth + 8 : 0 ), 0 );
+		const twoRows = filtersWidth + SEARCH_AND_PROVIDER_WIDTH > toolbar.clientWidth - TOOLBAR_PADDING;
+
+		this.$el.toggleClass( 'stockpack-two-rows', twoRows );
+		this.images.$el.css( 'top', twoRows ? toolbar.offsetHeight + 8 : '' );
 	},
 
 	createProviderFilter() {

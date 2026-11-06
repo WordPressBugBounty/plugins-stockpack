@@ -8,8 +8,9 @@ const StockpackSelectFilters = wp.media.View.extend( /** @lends wp.media.view.At
 		this.createFilters();
 		_.extend( this.filters, this.options.filters );
 
-		const $mainLabel = jQuery( '<span></span>', { text: this.label, class: 'group-label' } );
-		const $select = jQuery( '<select />' );
+		const selectId = this.id + '-select';
+		const $mainLabel = jQuery( '<label></label>', { text: this.label, class: 'group-label', for: selectId } );
+		const $select = jQuery( '<select />', { id: selectId, class: this.selectClass } );
 		// Build `<option>` elements.
 		$select.html( _.chain( this.filters ).map( function( filter, value ) {
 			return {
@@ -20,7 +21,30 @@ const StockpackSelectFilters = wp.media.View.extend( /** @lends wp.media.view.At
 
 		this.$el.prepend( $select );
 		this.$el.prepend( $mainLabel );
-		this.controller.on( 'update-filters', _.bind( this.change, this ) );
+		this.controller.on( 'update-filters', this.change, this );
+	},
+
+	dispose() {
+		this.controller.off( 'update-filters', this.change, this );
+
+		return wp.media.View.prototype.dispose.apply( this, arguments );
+	},
+
+	events: {
+		change: 'triggerFilter',
+	},
+
+	render() {
+		const value = this.model.get( this.name ) || null;
+		const key = _.findKey( this.filters, ( filter ) => filter.props[ this.name ] === value );
+
+		this.$el.find( 'select' ).val( key );
+
+		return this;
+	},
+
+	triggerFilter( changeEvent ) {
+		this.controller.trigger( 'update-filters', this.model, changeEvent.currentTarget );
 	},
 
 

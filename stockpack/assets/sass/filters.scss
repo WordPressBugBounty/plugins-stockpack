@@ -23,6 +23,63 @@
   }
 }
 
+.stockpack-browser.attachments-browser.has-search-filters {
+  .media-toolbar-secondary {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: auto;
+    position: relative;
+    top: -4px;
+  }
+
+  .provider-filter .group-label {
+    font-weight: 400;
+  }
+
+  .search-filter {
+    .group-label {
+      display: block;
+      width: auto;
+      height: auto;
+      margin: 0 0 2px;
+      line-height: 1.4;
+    }
+
+    select {
+      display: block;
+      width: auto;
+      height: 32px;
+      min-height: 32px;
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
+  &.stockpack-two-rows {
+    .media-toolbar {
+      height: 117px;
+    }
+
+    .media-toolbar-secondary {
+      float: none;
+      top: 0;
+    }
+
+    .media-toolbar-primary {
+      float: right;
+      clear: both;
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+
+      .search {
+        margin-top: 24px;
+      }
+    }
+  }
+}
+
 .provider-filter {
   display: inline-block;
   position: relative;

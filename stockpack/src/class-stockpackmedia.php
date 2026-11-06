@@ -442,8 +442,16 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                     ],
                     'orientation' => [
                         'label'      => __( 'Orientation', 'stockpack' ),
+                        'any'        => __( 'Any', 'stockpack' ),
                         'horizontal' => __( 'Horizontal', 'stockpack' ),
                         'vertical'   => __( 'Vertical', 'stockpack' ),
+                        'square'     => __( 'Square', 'stockpack' ),
+                    ],
+                    'gen_ai'      => [
+                        'label'   => __( 'AI images', 'stockpack' ),
+                        'include' => __( 'Include', 'stockpack' ),
+                        'exclude' => __( 'Exclude', 'stockpack' ),
+                        'only'    => __( 'Only AI', 'stockpack' ),
                     ],
                     'image_type'  => [
                         'label'        => __( 'Image type', 'stockpack' ),
@@ -721,7 +729,8 @@ if ( ! class_exists( 'StockpackMedia' ) ) {
                     'limit_dialog' => $this->pricing_url( 'limit-dialog' ),
                 ],
                 'filename_change'          => $this->settings->get_file_name_change_setting(),
-                'premium_provider_caption' => $this->settings->get_premium_providers_caption_setting()
+                'premium_provider_caption' => $this->settings->get_premium_providers_caption_setting(),
+                'show_search_filters'      => $this->settings->show_search_filters(),
             );
 
             return $strings;

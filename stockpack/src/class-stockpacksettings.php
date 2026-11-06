@@ -48,6 +48,10 @@ class StockpackSettings {
         return $this->get_option( 'safe_search', 'stockpack_basics' );
     }
 
+    public function show_search_filters() {
+        return 'no' !== $this->get_option( 'show_search_filters', 'stockpack_basics', 'yes' );
+    }
+
 
     public function get_file_name_change_setting() {
         return $this->get_option( 'file_name_change', 'stockpack_basics' );

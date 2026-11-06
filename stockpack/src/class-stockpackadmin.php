@@ -412,6 +412,17 @@ class StockpackAdmin {
                     'default' => 'yes',
                 ),
                 array(
+                    'name'    => 'show_search_filters',
+                    'label'   => __( 'Show search filters', 'stockpack' ),
+                    'desc'    => __( 'Orientation and AI image filters above the search results. Turn this off if they cause a layout problem in your page builder.', 'stockpack' ),
+                    'options' => array(
+                        'yes' => __( 'Yes', 'stockpack' ),
+                        'no'  => __( 'No', 'stockpack' )
+                    ),
+                    'type'    => 'radio',
+                    'default' => 'yes',
+                ),
+                array(
                     'name'    => 'providers',
                     'label'   => __( 'Providers available', 'stockpack' ),
                     'desc'    => __( 'Select providers you want to use in the select', 'stockpack' ),
